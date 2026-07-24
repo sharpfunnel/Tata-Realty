@@ -216,6 +216,38 @@ function Icon({ name, className = "size-5" }: { name: string; className?: string
   );
 }
 
+/**
+ * The single button treatment used across the page: black pill, white label,
+ * gold icon chip. The faint ring keeps the edge readable on dark backgrounds
+ * (the footer and the contact card) where black-on-black would disappear.
+ */
+function ActionButton({
+  href,
+  icon = "arrow",
+  external = false,
+  className = "",
+  children,
+}: {
+  href: string;
+  icon?: string;
+  external?: boolean;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <a
+      href={href}
+      {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+      className={`group inline-flex items-center gap-3 rounded-xl bg-black py-2 pr-2 pl-6 text-sm font-semibold text-white ring-1 ring-white/10 shadow-[0_12px_32px_-14px_rgba(0,0,0,0.6)] transition hover:bg-black/85 ${className}`}
+    >
+      <span>{children}</span>
+      <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-gold text-navy-deep transition group-hover:translate-x-0.5">
+        <Icon name={icon} className="size-4" />
+      </span>
+    </a>
+  );
+}
+
 export default function Home() {
   return (
     <>
@@ -235,14 +267,10 @@ export default function Home() {
               </span>
             </span>
           </div>
-          <a
-            href={CONTACT.phoneHref}
-            className="inline-flex items-center gap-2 rounded-full bg-navy px-4 py-2 text-xs font-semibold text-cream transition hover:bg-navy-deep sm:text-sm"
-          >
-            <Icon name="phone" className="size-4" />
+          <ActionButton href={CONTACT.phoneHref} icon="phone" className="py-1.5 pl-5">
             <span className="hidden sm:inline">Call {CONTACT.name}</span>
             <span className="sm:hidden">Call now</span>
-          </a>
+          </ActionButton>
         </div>
       </header>
 
@@ -271,24 +299,10 @@ export default function Home() {
                 </p>
 
                 <div className="mt-8 flex flex-col items-start gap-3 sm:flex-row">
-                  <a
-                    href="#lead-form"
-                    className="group inline-flex items-center gap-3 rounded-xl bg-black py-2 pr-2 pl-6 text-sm font-semibold text-white shadow-[0_12px_32px_-14px_rgba(0,0,0,0.6)] transition hover:bg-black/85"
-                  >
-                    Get Pre-Launch Price
-                    <span className="grid size-9 place-items-center rounded-lg bg-gold text-navy-deep transition group-hover:translate-x-0.5">
-                      <Icon name="arrow" className="size-4" />
-                    </span>
-                  </a>
-                  <a
-                    href={CONTACT.phoneHref}
-                    className="group inline-flex items-center gap-3 rounded-xl bg-black py-2 pr-2 pl-6 text-sm font-semibold text-white shadow-[0_12px_32px_-14px_rgba(0,0,0,0.6)] transition hover:bg-black/85"
-                  >
+                  <ActionButton href="#lead-form">Get Pre-Launch Price</ActionButton>
+                  <ActionButton href={CONTACT.phoneHref} icon="phone">
                     Call {CONTACT.name}
-                    <span className="grid size-9 place-items-center rounded-lg bg-gold text-navy-deep">
-                      <Icon name="phone" className="size-4" />
-                    </span>
-                  </a>
+                  </ActionButton>
                 </div>
               </div>
             </div>
@@ -408,13 +422,9 @@ export default function Home() {
                         <dd className="font-medium text-navy">{config.price}</dd>
                       </div>
                     </dl>
-                    <a
-                      href="#lead-form"
-                      className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full bg-navy px-6 py-3.5 text-sm font-semibold text-cream transition hover:bg-navy-deep"
-                    >
+                    <ActionButton href="#lead-form" className="mt-7 w-full justify-between">
                       Get Price Details
-                      <Icon name="arrow" className="size-4" />
-                    </a>
+                    </ActionButton>
                   </div>
                 </article>
               ))}
@@ -538,13 +548,9 @@ export default function Home() {
                     </li>
                   ))}
                 </ul>
-                <a
-                  href="#lead-form"
-                  className="mt-8 inline-flex items-center justify-center gap-2 rounded-full border border-navy/20 px-6 py-3.5 text-sm font-semibold text-navy transition hover:bg-navy hover:text-cream"
-                >
+                <ActionButton href="#lead-form" className="mt-8 w-full justify-between">
                   Ask About Connectivity
-                  <Icon name="arrow" className="size-4" />
-                </a>
+                </ActionButton>
               </div>
             </div>
           </div>
@@ -580,13 +586,9 @@ export default function Home() {
               </div>
             </div>
 
-            <a
-              href="#lead-form"
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-gold px-8 py-4 text-sm font-semibold text-navy-deep transition hover:bg-gold-soft"
-            >
+            <ActionButton href="#lead-form" className="w-fit">
               Request a Callback
-              <Icon name="arrow" className="size-4" />
-            </a>
+            </ActionButton>
           </div>
         </section>
 
@@ -707,14 +709,9 @@ export default function Home() {
               >
                 {CONTACT.email}
               </a>
-              <a
-                href={whatsappLink()}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-3 inline-flex w-fit items-center gap-2 rounded-full border border-white/20 px-5 py-2.5 font-medium text-white transition hover:border-gold hover:text-gold"
-              >
+              <ActionButton href={whatsappLink()} external icon="phone" className="mt-3 w-fit">
                 Chat on WhatsApp
-              </a>
+              </ActionButton>
             </div>
           </div>
 
@@ -746,7 +743,7 @@ export default function Home() {
       <a
         href={CONTACT.phoneHref}
         aria-label={`Call ${CONTACT.name}`}
-        className="fixed bottom-5 left-5 z-50 grid size-14 place-items-center rounded-full bg-navy text-gold shadow-lg transition hover:bg-navy-deep lg:hidden"
+        className="fixed bottom-5 left-5 z-50 grid size-14 place-items-center rounded-full bg-black text-gold shadow-lg transition hover:bg-black/85 lg:hidden"
       >
         <Icon name="phone" className="size-6" />
       </a>

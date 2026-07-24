@@ -198,9 +198,23 @@ export default function LeadForm({
 
       <button
         type="submit"
-        className="sm:col-span-2 rounded-xl bg-gold px-6 py-3.5 text-sm font-semibold text-navy-deep transition hover:bg-gold-soft focus-visible:ring-4 focus-visible:ring-gold/40 focus-visible:outline-none"
+        className="group inline-flex items-center justify-between gap-3 rounded-xl bg-black py-2 pr-2 pl-6 text-sm font-semibold text-white ring-1 ring-white/10 shadow-[0_12px_32px_-14px_rgba(0,0,0,0.6)] transition hover:bg-black/85 focus-visible:ring-4 focus-visible:ring-gold/40 focus-visible:outline-none sm:col-span-2"
       >
-        {submitLabel}
+        <span>{submitLabel}</span>
+        <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-gold text-navy-deep transition group-hover:translate-x-0.5">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="size-4"
+            aria-hidden="true"
+          >
+            <path d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
+        </span>
       </button>
 
       <p className={`sm:col-span-2 text-center text-xs ${s.note}`}>
