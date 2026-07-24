@@ -298,9 +298,18 @@ export default function Home() {
                   एक बार का मौका - टाटा का प्रीमियम प्रोजेक्ट, नवी मुंबई में।
                 </p>
 
-                <div className="mt-8 flex flex-col items-start gap-3 sm:flex-row">
-                  <ActionButton href="#lead-form">Get Pre-Launch Price</ActionButton>
-                  <ActionButton href={CONTACT.phoneHref} icon="phone">
+                <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-start">
+                  <ActionButton
+                    href="#lead-form"
+                    className="w-full justify-between sm:w-auto sm:justify-start"
+                  >
+                    Get Pre-Launch Price
+                  </ActionButton>
+                  <ActionButton
+                    href={CONTACT.phoneHref}
+                    icon="phone"
+                    className="w-full justify-between sm:w-auto sm:justify-start"
+                  >
                     Call {CONTACT.name}
                   </ActionButton>
                 </div>
@@ -313,7 +322,7 @@ export default function Home() {
            * sky-to-field gradient anchored, so the fixed height eats into the
            * blank sky at the top rather than the composition.
            */}
-          <div className="relative h-[950px] w-full overflow-hidden">
+          <div className="relative aspect-[3/2] w-full overflow-hidden sm:aspect-[16/9] lg:aspect-auto lg:h-[950px]">
             <Image
               src="/hero-home.webp"
               alt="High-rise residential tower beside open green fields"
