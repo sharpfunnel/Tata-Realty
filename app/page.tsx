@@ -358,7 +358,7 @@ export default function Home() {
         {/* ── SECTION 2 · WHY THIS PROJECT ───────────────────────────────── */}
         <section className="bg-white">
           {/* Extra top padding clears the half of the stat bar hanging into it */}
-          <div className="mx-auto w-full max-w-7xl px-5 pt-[174px] pb-16 sm:px-8 lg:pt-[126px] lg:pb-24">
+          <div data-reveal className="mx-auto w-full max-w-7xl px-5 pt-[174px] pb-16 sm:px-8 lg:pt-[126px] lg:pb-24">
             <SectionLabel>Why This Project</SectionLabel>
             <h2 className="font-display mt-6 max-w-3xl text-3xl leading-tight font-semibold text-black sm:text-4xl lg:text-5xl">
               Why Tata Realty at Ghansoli is Different
@@ -391,7 +391,7 @@ export default function Home() {
 
         {/* ── SECTION 3 · CONFIGURATIONS & PRICING ───────────────────────── */}
         <section className="bg-white">
-          <div className="mx-auto w-full max-w-7xl px-5 py-16 sm:px-8 lg:py-24">
+          <div data-reveal className="mx-auto w-full max-w-7xl px-5 py-16 sm:px-8 lg:py-24">
             <SectionLabel>Configurations</SectionLabel>
             <h2 className="font-display mt-6 text-3xl leading-tight font-semibold text-black sm:text-4xl lg:text-5xl">
               Choose Your Home
@@ -457,7 +457,7 @@ export default function Home() {
           />
           <div aria-hidden="true" className="absolute inset-0 -z-10 bg-black/70" />
 
-          <div className="mx-auto w-full max-w-7xl px-5 py-16 sm:px-8 lg:py-24">
+          <div data-reveal className="mx-auto w-full max-w-7xl px-5 py-16 sm:px-8 lg:py-24">
             <SectionLabel dark>Project Details</SectionLabel>
             <h2 className="font-display mt-6 text-3xl leading-tight font-semibold text-white sm:text-4xl lg:text-5xl">
               About the Property
@@ -493,7 +493,7 @@ export default function Home() {
 
         {/* ── SECTION 4 · CAMPUS ECOSYSTEM ───────────────────────────────── */}
         <section className="bg-black py-16 lg:py-24">
-          <div className="mx-auto w-full max-w-7xl px-5 sm:px-8">
+          <div data-reveal className="mx-auto w-full max-w-7xl px-5 sm:px-8">
             <SectionLabel dark>Campus Ecosystem</SectionLabel>
             <div className="mt-6 grid gap-8 lg:grid-cols-[1.3fr_1fr] lg:items-end">
               <h2 className="font-display text-3xl leading-tight font-semibold text-white sm:text-4xl lg:text-5xl">
@@ -533,7 +533,7 @@ export default function Home() {
 
         {/* ── SECTION 5 · LOCATION & CONNECTIVITY ────────────────────────── */}
         <section className="bg-white">
-          <div className="mx-auto w-full max-w-7xl px-5 py-16 sm:px-8 lg:py-24">
+          <div data-reveal className="mx-auto w-full max-w-7xl px-5 py-16 sm:px-8 lg:py-24">
             <SectionLabel>Location</SectionLabel>
             <h2 className="font-display mt-6 text-3xl leading-tight font-semibold text-black sm:text-4xl lg:text-5xl">
               Where Ghansoli Stands
@@ -574,7 +574,7 @@ export default function Home() {
         </section>
 
         {/* ── SECTION 6 · CONTACT CARD ───────────────────────────────────── */}
-        <section className="mx-auto w-full max-w-7xl px-5 py-16 sm:px-8 lg:py-24">
+        <section data-reveal className="mx-auto w-full max-w-7xl px-5 py-16 sm:px-8 lg:py-24">
           <SectionLabel>Your Point of Contact</SectionLabel>
 
           <div className="mt-10 grid gap-10 rounded-3xl bg-black p-8 sm:p-12 lg:grid-cols-[1fr_auto] lg:items-center">
@@ -611,7 +611,7 @@ export default function Home() {
 
         {/* ── SECTION 7 · LEAD FORM ──────────────────────────────────────── */}
         <section id="lead-form" className="scroll-mt-24 bg-black py-16 lg:py-24">
-          <div className="mx-auto w-full max-w-3xl px-5 text-center sm:px-8">
+          <div data-reveal className="mx-auto w-full max-w-3xl px-5 text-center sm:px-8">
             <SectionLabel dark>Enquire Now</SectionLabel>
             <h2 className="font-display mt-6 text-3xl leading-tight font-semibold text-white sm:text-4xl lg:text-5xl">
               Get Pre-Launch Price &amp; Floor Plans
@@ -657,7 +657,7 @@ export default function Home() {
 
         {/* ── SECTION 8 · FAQ ────────────────────────────────────────────── */}
         <section className="bg-white">
-          <div className="mx-auto grid w-full max-w-7xl gap-10 px-5 py-16 sm:px-8 lg:grid-cols-[0.85fr_1.15fr] lg:gap-14 lg:py-24">
+          <div data-reveal className="mx-auto grid w-full max-w-7xl gap-10 px-5 py-16 sm:px-8 lg:grid-cols-[0.85fr_1.15fr] lg:gap-14 lg:py-24">
             <div>
               <SectionLabel>FAQ</SectionLabel>
               <h2 className="font-display mt-6 text-3xl leading-tight font-semibold text-black sm:text-4xl lg:text-5xl">
