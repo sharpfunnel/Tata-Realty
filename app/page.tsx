@@ -27,7 +27,7 @@ const WHY_CARDS = [
   {
     icon: "forest",
     title: "Low Density",
-    body: "Only 7 towers on 10.33 acres — large open spaces, hill views.",
+    body: "Only 7 towers on 10.33 acres - large open spaces, hill views.",
   },
   {
     icon: "pin",
@@ -46,14 +46,14 @@ const CONFIGURATIONS = [
   },
   {
     type: "3 BHK",
-    size: "~970 – 1,155 sq.ft",
+    size: "~970 to 1,155 sq.ft",
     price: "[client to fill]",
     image: "/config-3bhk.webp",
     alt: "Landscaped lobby with lounge seating and a sculpture",
   },
 ];
 
-// Verbatim from the brief's "About the Property" tables — no figures invented.
+// Verbatim from the brief's "About the Property" tables - no figures invented.
 const SPEC_TABLES = [
   {
     title: "Location",
@@ -76,7 +76,7 @@ const SPEC_TABLES = [
       ["2 BHK Size", "~750+ sq.ft"],
       ["3 BHK Size", "~970 to 1,155 sq.ft"],
       ["Tower Config", "High-rise G+40 / G+42 towers"],
-      ["Density", "Low density — only ~7 towers across ~10.33 acres"],
+      ["Density", "Low density - only ~7 towers across ~10.33 acres"],
       ["Views", "Lifetime open green / hill views"],
       ["Amenities", "Premium lifestyle amenities + large open spaces"],
       ["Launch Status", "Pre-Launch"],
@@ -132,11 +132,11 @@ const FAQS = [
   },
   {
     q: "When will the project launch?",
-    a: "The project is at pre-launch stage. Launch and possession dates are yet to be confirmed — share your details and Rahul Thakur will update you as soon as they are announced.",
+    a: "The project is at pre-launch stage. Launch and possession dates are yet to be confirmed - share your details and Rahul Thakur will update you as soon as they are announced.",
   },
   {
     q: "What is included in the 47.5-acre campus?",
-    a: "A mix of residential, commercial and hospitality — an IT Park already delivered and leased to Smartworks, a Taj Hotel currently under development, and only ~7 residential towers across ~10.33 acres with premium lifestyle amenities and large open spaces.",
+    a: "A mix of residential, commercial and hospitality - an IT Park already delivered and leased to Smartworks, a Taj Hotel currently under development, and only ~7 residential towers across ~10.33 acres with premium lifestyle amenities and large open spaces.",
   },
   {
     q: "Why should I invest at pre-launch?",
@@ -167,7 +167,7 @@ function SectionLabel({
   );
 }
 
-/** Material Symbols (24dp, weight 400) — filled paths on a 0 -960 960 960 grid */
+/** Material Symbols (24dp, weight 400) - filled paths on a 0 -960 960 960 grid */
 const CARD_ICONS: Record<string, string> = {
   shield:
     "M467-85q-6-1-12-3-135-45-215-166.5T160-516v-189q0-25 14.5-45t37.5-29l240-90q14-5 28-5t28 5l240 90q23 9 37.5 29t14.5 45v189q0 140-80 261.5T505-88q-6 2-12 3t-13 1q-7 0-13-1Zm13-79q104-33 172-132t68-220v-189l-240-90-240 90v189q0 121 68 220t172 132Zm0-316Z",
@@ -241,7 +241,7 @@ function ActionButton({
       className={`group inline-flex items-center gap-3 rounded-xl bg-black py-2 pr-2 pl-6 text-sm font-semibold text-white ring-1 ring-white/10 shadow-[0_12px_32px_-14px_rgba(0,0,0,0.6)] transition hover:bg-black/85 ${className}`}
     >
       <span>{children}</span>
-      <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-gold text-navy-deep transition group-hover:translate-x-0.5">
+      <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-gold text-black transition group-hover:translate-x-0.5">
         <Icon name={icon} className="size-4" />
       </span>
     </a>
@@ -251,18 +251,18 @@ function ActionButton({
 export default function Home() {
   return (
     <>
-      {/* Identity strip — channel partner badge only, no navigation menu */}
+      {/* Identity strip - channel partner badge only, no navigation menu */}
       <header className="sticky top-0 z-40 border-b border-line/70 bg-cream/85 backdrop-blur">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-5 py-3 sm:px-8">
           <div className="flex items-center gap-3">
-            <span className="font-display grid size-9 place-items-center rounded-lg bg-navy text-sm font-semibold text-gold">
+            <span className="font-display grid size-9 place-items-center rounded-lg bg-black text-sm font-semibold text-gold">
               TR
             </span>
             <span className="leading-tight">
               <span className="block text-[10px] tracking-[0.18em] text-muted uppercase">
                 Channel Partner for
               </span>
-              <span className="font-display block text-sm font-semibold text-navy">
+              <span className="font-display block text-sm font-semibold text-black">
                 Tata Realty
               </span>
             </span>
@@ -279,7 +279,7 @@ export default function Home() {
         <section className="relative">
           {/*
            * Below lg the copy stacks above the render. From lg it overlays the
-           * render's empty left half — the tower occupies roughly the right 36%,
+           * render's empty left half - the tower occupies roughly the right 36%,
            * so a max-w-xl column stays clear of it.
            */}
           <div className="lg:absolute lg:inset-0 lg:z-10 lg:flex lg:items-start">
@@ -287,11 +287,11 @@ export default function Home() {
               <div className="max-w-xl">
                 <SectionLabel>Pre-Launch · Tata Realty · Ghansoli, Navi Mumbai</SectionLabel>
                 <h1 className="font-display mt-5 text-3xl leading-[1.05] font-semibold text-black sm:mt-6 sm:text-5xl">
-                  Tata Realty&apos;s Most Prestigious Development in Navi Mumbai — Now
+                  Tata Realty&apos;s Most Prestigious Development in Navi Mumbai - Now
                   Pre-Launching at Ghansoli
                 </h1>
                 <p className="mt-5 text-sm leading-relaxed text-black/75 sm:text-base lg:text-lg">
-                  Premium 2 &amp; 3 BHK residences within a 47.5-acre integrated campus — Taj
+                  Premium 2 &amp; 3 BHK residences within a 47.5-acre integrated campus - Taj
                   Hotel, IT Park, and open green views in one address.
                 </p>
                 <p className="font-deva mt-3 text-sm text-black sm:text-base">
@@ -336,11 +336,11 @@ export default function Home() {
           {/*
            * Stat bar straddles the seam. The zero-height wrapper sits exactly on
            * the bottom edge of the render, and -translate-y-1/2 shifts the bar up
-           * by half its own height — so the 50/50 split holds at any breakpoint,
+           * by half its own height - so the 50/50 split holds at any breakpoint,
            * however the cells wrap.
            */}
           <div className="relative z-20 mx-auto h-0 w-full max-w-7xl px-5 sm:px-8">
-            <dl className="grid -translate-y-1/2 grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line shadow-[0_18px_44px_-24px_rgba(27,42,74,0.45)] lg:grid-cols-4">
+            <dl className="grid -translate-y-1/2 grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line shadow-[0_18px_44px_-24px_rgba(0,0,0,0.45)] lg:grid-cols-4">
               {HERO_STATS.map((stat) => (
                 <div key={stat.value} className="bg-white px-5 py-6 sm:px-7">
                   <dt className="font-display text-xl font-semibold text-black sm:text-2xl">
@@ -365,7 +365,7 @@ export default function Home() {
             </h2>
             <p className="mt-5 max-w-3xl text-base leading-relaxed text-black/70 lg:text-lg">
               Tata Realty &amp; Infrastructure Ltd has committed ₹5,000+ crore to a 47.5-acre
-              integrated campus at Ghansoli — residential, commercial and hospitality in one
+              integrated campus at Ghansoli - residential, commercial and hospitality in one
               address. The IT Park is already delivered and leased to Smartworks, with a Taj
               Hotel under development on the same campus.
             </p>
@@ -424,11 +424,11 @@ export default function Home() {
                     <dl className="mt-6 divide-y divide-line border-y border-line text-sm">
                       <div className="flex items-center justify-between py-3">
                         <dt className="text-muted">Size</dt>
-                        <dd className="font-medium text-navy">{config.size}</dd>
+                        <dd className="font-medium text-black">{config.size}</dd>
                       </div>
                       <div className="flex items-center justify-between py-3">
                         <dt className="text-muted">Price</dt>
-                        <dd className="font-medium text-navy">{config.price}</dd>
+                        <dd className="font-medium text-black">{config.price}</dd>
                       </div>
                     </dl>
                     <ActionButton href="#lead-form" className="mt-7 w-full justify-between">
@@ -439,8 +439,8 @@ export default function Home() {
               ))}
             </div>
 
-            <p className="mt-8 rounded-2xl border border-gold/30 bg-gold-tint/50 px-6 py-4 text-sm text-navy">
-              Exact pricing and floor plans shared on enquiry only — pre-launch rates available
+            <p className="mt-8 rounded-2xl border border-gold/30 bg-gold-tint/50 px-6 py-4 text-sm text-black">
+              Exact pricing and floor plans shared on enquiry only - pre-launch rates available
               for a limited period.
             </p>
           </div>
@@ -462,6 +462,10 @@ export default function Home() {
             <h2 className="font-display mt-6 text-3xl leading-tight font-semibold text-white sm:text-4xl lg:text-5xl">
               About the Property
             </h2>
+            <p className="mt-5 max-w-3xl text-base leading-relaxed text-white/70 lg:text-lg">
+              Pre-launch premium residential development by Tata Realty. One of Navi
+              Mumbai&apos;s most anticipated projects.
+            </p>
 
             <div className="mt-12 grid gap-[30px] lg:grid-cols-2">
               {SPEC_TABLES.map((table) => (
@@ -469,7 +473,7 @@ export default function Home() {
                   key={table.title}
                   className="rounded-3xl border border-line bg-white p-7 sm:p-9"
                 >
-                  <h3 className="font-display text-xl font-semibold text-navy">{table.title}</h3>
+                  <h3 className="font-display text-xl font-semibold text-black">{table.title}</h3>
                   <dl className="mt-6 divide-y divide-line border-t border-line text-sm">
                     {table.rows.map(([term, value]) => (
                       <div
@@ -477,7 +481,7 @@ export default function Home() {
                         className="grid gap-1 py-3.5 sm:grid-cols-[11rem_1fr] sm:gap-4"
                       >
                         <dt className="text-muted">{term}</dt>
-                        <dd className="font-medium text-navy">{value}</dd>
+                        <dd className="font-medium text-black">{value}</dd>
                       </div>
                     ))}
                   </dl>
@@ -488,12 +492,12 @@ export default function Home() {
         </section>
 
         {/* ── SECTION 4 · CAMPUS ECOSYSTEM ───────────────────────────────── */}
-        <section className="bg-navy py-16 lg:py-24">
+        <section className="bg-black py-16 lg:py-24">
           <div className="mx-auto w-full max-w-7xl px-5 sm:px-8">
             <SectionLabel dark>Campus Ecosystem</SectionLabel>
             <div className="mt-6 grid gap-8 lg:grid-cols-[1.3fr_1fr] lg:items-end">
               <h2 className="font-display text-3xl leading-tight font-semibold text-white sm:text-4xl lg:text-5xl">
-                More Than a Home — An Integrated Address
+                More Than a Home - An Integrated Address
               </h2>
               <p className="max-w-3xl text-base leading-relaxed text-white/60 lg:text-lg">
                 Ghansoli is fast becoming Navi Mumbai&apos;s next major corporate and lifestyle
@@ -534,6 +538,10 @@ export default function Home() {
             <h2 className="font-display mt-6 text-3xl leading-tight font-semibold text-black sm:text-4xl lg:text-5xl">
               Where Ghansoli Stands
             </h2>
+            <p className="mt-5 max-w-3xl text-base leading-relaxed text-black/70 lg:text-lg">
+              Adjacent to Reliance Corporate Park, close to the upcoming 100-acre Adani
+              Commercial Park and a strong IT and corporate catchment.
+            </p>
 
             <div className="mt-12 grid gap-8 lg:grid-cols-2 lg:gap-10">
               <div className="overflow-hidden rounded-3xl border border-line bg-white">
@@ -551,7 +559,7 @@ export default function Home() {
                   {LOCATION_POINTS.map((point) => (
                     <li key={point} className="flex items-start gap-4 py-4 first:pt-0">
                       <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-gold" />
-                      <span className="text-sm leading-relaxed text-navy sm:text-base">
+                      <span className="text-sm leading-relaxed text-black sm:text-base">
                         {point}
                       </span>
                     </li>
@@ -569,7 +577,7 @@ export default function Home() {
         <section className="mx-auto w-full max-w-7xl px-5 py-16 sm:px-8 lg:py-24">
           <SectionLabel>Your Point of Contact</SectionLabel>
 
-          <div className="mt-10 grid gap-10 rounded-3xl bg-navy p-8 sm:p-12 lg:grid-cols-[1fr_auto] lg:items-center">
+          <div className="mt-10 grid gap-10 rounded-3xl bg-black p-8 sm:p-12 lg:grid-cols-[1fr_auto] lg:items-center">
             <div>
               <p className="font-display text-3xl font-semibold text-white sm:text-4xl">
                 {CONTACT.name}
@@ -602,17 +610,21 @@ export default function Home() {
         </section>
 
         {/* ── SECTION 7 · LEAD FORM ──────────────────────────────────────── */}
-        <section id="lead-form" className="scroll-mt-24 bg-navy-deep py-16 lg:py-24">
+        <section id="lead-form" className="scroll-mt-24 bg-black py-16 lg:py-24">
           <div className="mx-auto w-full max-w-3xl px-5 text-center sm:px-8">
             <SectionLabel dark>Enquire Now</SectionLabel>
             <h2 className="font-display mt-6 text-3xl leading-tight font-semibold text-white sm:text-4xl lg:text-5xl">
               Get Pre-Launch Price &amp; Floor Plans
             </h2>
+            <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-white/60 lg:text-lg">
+              Exact pricing and floor plans are shared on enquiry only - pre-launch rates are
+              available for a limited period.
+            </p>
 
             <div className="mt-10 text-left">
               <LeadForm
                 id="main-form"
-                tone="dark"
+                tone="light"
                 withConfiguration
                 submitLabel="Get Pre-Launch Details"
               />
@@ -632,10 +644,10 @@ export default function Home() {
                 {MARQUEE_ITEMS.map((item) => (
                   <li
                     key={item}
-                    className="font-display flex items-center gap-8 px-8 text-sm font-medium tracking-wide text-navy-deep uppercase sm:text-base"
+                    className="font-display flex items-center gap-8 px-8 text-sm font-medium tracking-wide text-black uppercase sm:text-base"
                   >
                     {item}
-                    <span className="size-1.5 rounded-full bg-navy-deep/40" />
+                    <span className="size-1.5 rounded-full bg-black/40" />
                   </li>
                 ))}
               </ul>
@@ -651,6 +663,9 @@ export default function Home() {
               <h2 className="font-display mt-6 text-3xl leading-tight font-semibold text-black sm:text-4xl lg:text-5xl">
                 Find answers to common questions about this project
               </h2>
+              <p className="mt-5 max-w-3xl text-base leading-relaxed text-black/70 lg:text-lg">
+                Configurations, the 47.5-acre campus, launch timing and how to get started.
+              </p>
               <div className="relative mt-8 hidden h-72 overflow-hidden rounded-3xl border border-line lg:block">
                 <Image
                   src="/faq-aerial.webp"
@@ -666,10 +681,10 @@ export default function Home() {
               {FAQS.map((faq) => (
                 <details key={faq.q} className="group py-5">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-6 text-left">
-                    <span className="font-display text-base font-semibold text-navy sm:text-lg">
+                    <span className="font-display text-base font-semibold text-black sm:text-lg">
                       {faq.q}
                     </span>
-                    <span className="grid size-8 shrink-0 place-items-center rounded-full border border-line text-navy transition group-open:rotate-45 group-open:border-gold group-open:bg-gold">
+                    <span className="grid size-8 shrink-0 place-items-center rounded-full border border-line text-black transition group-open:rotate-45 group-open:border-gold group-open:bg-gold">
                       <svg
                         viewBox="0 0 24 24"
                         fill="none"

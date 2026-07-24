@@ -18,13 +18,13 @@ const notoDevanagari = Noto_Sans_Devanagari({
 });
 
 export const metadata: Metadata = {
-  title: "Tata Realty Ghansoli — Pre-Launch 2 & 3 BHK, Navi Mumbai",
+  title: "Tata Realty Ghansoli - Pre-Launch 2 & 3 BHK, Navi Mumbai",
   description:
-    "Premium 2 & 3 BHK residences within a 47.5-acre integrated campus at Ghansoli, Navi Mumbai — Taj Hotel, IT Park, and open green views in one address.",
+    "Premium 2 & 3 BHK residences within a 47.5-acre integrated campus at Ghansoli, Navi Mumbai - Taj Hotel, IT Park, and open green views in one address.",
 };
 
 export const viewport: Viewport = {
-  themeColor: "#1b2a4a",
+  themeColor: "#000000",
 };
 
 export default function RootLayout({

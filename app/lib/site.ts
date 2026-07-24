@@ -17,11 +17,11 @@ export function whatsappLink(message: string = WHATSAPP_MESSAGE) {
   return `https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent(message)}`;
 }
 
-// Budget bands are not specified in the brief — confirm with client before ads go live.
+// Budget bands are not specified in the brief - confirm with client before ads go live.
 export const BUDGET_OPTIONS = [
   "Under ₹1 Cr",
-  "₹1 Cr – ₹1.5 Cr",
-  "₹1.5 Cr – ₹2 Cr",
+  "₹1 Cr - ₹1.5 Cr",
+  "₹1.5 Cr - ₹2 Cr",
   "Above ₹2 Cr",
 ] as const;
 

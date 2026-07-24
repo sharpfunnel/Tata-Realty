@@ -23,8 +23,9 @@ const styles = {
   light: {
     frame: "border-line bg-white",
     label: "text-muted",
+    // Faintly tinted so the inputs still read as inputs on the white panel.
     field:
-      "border-line bg-white text-ink placeholder:text-muted/60 focus:border-gold focus:ring-gold/25",
+      "border-line bg-cream/70 text-ink placeholder:text-muted/60 focus:border-gold focus:bg-white focus:ring-gold/25",
     note: "text-muted",
     error: "text-red-600",
   },
@@ -64,7 +65,7 @@ export default function LeadForm({
 
     setError(null);
 
-    // Meta conversion event — Pixel ID still pending from client.
+    // Meta conversion event - Pixel ID still pending from client.
     window.fbq?.("track", "Lead");
 
     const lines = [
@@ -100,10 +101,10 @@ export default function LeadForm({
         </span>
         <p
           className={`font-display mt-4 text-xl font-semibold ${
-            tone === "dark" ? "text-white" : "text-navy"
+            tone === "dark" ? "text-white" : "text-black"
           }`}
         >
-          Thank you — request received
+          Thank you - request received
         </p>
         <p className={`mt-2 text-sm ${s.note}`}>
           {CONTACT.firstName} will call you within 30 minutes.
@@ -201,7 +202,7 @@ export default function LeadForm({
         className="group inline-flex items-center justify-between gap-3 rounded-xl bg-black py-2 pr-2 pl-6 text-sm font-semibold text-white ring-1 ring-white/10 shadow-[0_12px_32px_-14px_rgba(0,0,0,0.6)] transition hover:bg-black/85 focus-visible:ring-4 focus-visible:ring-gold/40 focus-visible:outline-none sm:col-span-2"
       >
         <span>{submitLabel}</span>
-        <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-gold text-navy-deep transition group-hover:translate-x-0.5">
+        <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-gold text-black transition group-hover:translate-x-0.5">
           <svg
             viewBox="0 0 24 24"
             fill="none"
