@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+@theme {
+  /* Brand palette — Dark Navy primary, Gold accent (per brief) */
+  --color-navy: #1b2a4a;
+  --color-navy-deep: #101b31;
+  --color-navy-soft: #2b3d63;
+  --color-gold: #c9a84c;
+  --color-gold-soft: #e3cd91;
+  --color-gold-tint: #f3ead2;
+  --color-cream: #f5f3ee;
+  --color-cream-dark: #eae5da;
+  --color-ink: #16233d;
+  --color-muted: #6c7791;
+  --color-line: #ded9cd;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-deva: var(--font-noto-deva), var(--font-inter), sans-serif;
+
+  --animate-marquee: marquee 34s linear infinite;
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-optical-sizing: auto;
+}
+
+/*
+ * Inter is loaded with its `opsz` axis. Optical size 32 is Inter Display —
+ * used for headings; body copy keeps the default text optical size.
+ */
+.font-display {
+  font-variation-settings: "opsz" 32;
+  letter-spacing: -0.025em;
+}
+
+.font-deva {
+  font-family: var(--font-deva);
+}
+
+/* Hide the native disclosure triangle on the FAQ accordion. */
+summary::-webkit-details-marker {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .animate-marquee {
+    animation: none;
+  }
+}
