@@ -1,7 +1,6 @@
 import Image from "next/image";
 
 import LeadForm from "./components/lead-form";
-import { TowerVisual } from "./components/visuals";
 import { CONTACT, whatsappLink } from "./lib/site";
 
 const MAP_SRC =
@@ -38,8 +37,53 @@ const WHY_CARDS = [
 ];
 
 const CONFIGURATIONS = [
-  { type: "2 BHK", size: "~750+ sq.ft", price: "[client to fill]" },
-  { type: "3 BHK", size: "~970 – 1,155 sq.ft", price: "[client to fill]" },
+  {
+    type: "2 BHK",
+    size: "~750+ sq.ft",
+    price: "[client to fill]",
+    image: "/config-2bhk.webp",
+    alt: "Residents' lounge with bar seating and a games zone",
+  },
+  {
+    type: "3 BHK",
+    size: "~970 – 1,155 sq.ft",
+    price: "[client to fill]",
+    image: "/config-3bhk.webp",
+    alt: "Landscaped lobby with lounge seating and a sculpture",
+  },
+];
+
+// Verbatim from the brief's "About the Property" tables — no figures invented.
+const SPEC_TABLES = [
+  {
+    title: "Location",
+    rows: [
+      ["Project Name", "Tata Realty Integrated Development (Pre-Launch)"],
+      ["Developer", "Tata Realty & Infrastructure Ltd"],
+      ["Location", "Ghansoli, Navi Mumbai"],
+      ["Total Campus", "47.5 acres integrated development"],
+      ["Campus Mix", "Residential + Commercial + Hospitality"],
+      ["Landmark", "Adjacent to Reliance Corporate Park"],
+      ["Nearby", "Upcoming 100-acre Adani Commercial Park, IT hubs"],
+      ["Total Investment", "₹5,000+ Crore"],
+      ["RERA Number", "To be confirmed"],
+    ],
+  },
+  {
+    title: "Residential Offering",
+    rows: [
+      ["Type", "Premium 2 BHK & 3 BHK"],
+      ["2 BHK Size", "~750+ sq.ft"],
+      ["3 BHK Size", "~970 to 1,155 sq.ft"],
+      ["Tower Config", "High-rise G+40 / G+42 towers"],
+      ["Density", "Low density — only ~7 towers across ~10.33 acres"],
+      ["Views", "Lifetime open green / hill views"],
+      ["Amenities", "Premium lifestyle amenities + large open spaces"],
+      ["Launch Status", "Pre-Launch"],
+      ["Price", "To be confirmed"],
+      ["Possession", "To be confirmed"],
+    ],
+  },
 ];
 
 const ECOSYSTEM = [
@@ -296,6 +340,12 @@ export default function Home() {
             <h2 className="font-display mt-6 max-w-3xl text-3xl leading-tight font-semibold text-black sm:text-4xl lg:text-5xl">
               Why Tata Realty at Ghansoli is Different
             </h2>
+            <p className="mt-5 max-w-3xl text-base leading-relaxed text-black/70 lg:text-lg">
+              Tata Realty &amp; Infrastructure Ltd has committed ₹5,000+ crore to a 47.5-acre
+              integrated campus at Ghansoli — residential, commercial and hospitality in one
+              address. The IT Park is already delivered and leased to Smartworks, with a Taj
+              Hotel under development on the same campus.
+            </p>
 
             <div className="mt-12 grid gap-[30px] sm:grid-cols-2 lg:grid-cols-4">
               {WHY_CARDS.map((card) => (
@@ -317,51 +367,105 @@ export default function Home() {
         </section>
 
         {/* ── SECTION 3 · CONFIGURATIONS & PRICING ───────────────────────── */}
-        <section className="mx-auto w-full max-w-7xl px-5 py-16 sm:px-8 lg:py-24">
-          <SectionLabel>Configurations</SectionLabel>
-          <h2 className="font-display mt-6 text-3xl leading-tight font-semibold text-navy sm:text-4xl lg:text-5xl">
-            Choose Your Home
-          </h2>
+        <section className="bg-white">
+          <div className="mx-auto w-full max-w-7xl px-5 py-16 sm:px-8 lg:py-24">
+            <SectionLabel>Configurations</SectionLabel>
+            <h2 className="font-display mt-6 text-3xl leading-tight font-semibold text-black sm:text-4xl lg:text-5xl">
+              Choose Your Home
+            </h2>
+            <p className="mt-5 max-w-3xl text-base leading-relaxed text-black/70 lg:text-lg">
+              Premium 2 and 3 BHK residences in high-rise G+40 / G+42 towers, with lifetime open
+              green and hill views. Set among premium lifestyle amenities and large open spaces,
+              across a low-density layout of only ~7 towers.
+            </p>
 
-          <div className="mt-12 grid gap-6 lg:grid-cols-2">
-            {CONFIGURATIONS.map((config, index) => (
-              <article
-                key={config.type}
-                className="overflow-hidden rounded-3xl border border-line bg-white"
-              >
-                <div className="h-48 sm:h-56">
-                  <TowerVisual uid={`config-${index}`} className="size-full" />
-                </div>
-                <div className="p-7 sm:p-8">
-                  <h3 className="font-display text-2xl font-semibold text-navy">
-                    {config.type}
-                  </h3>
-                  <dl className="mt-6 divide-y divide-line border-y border-line text-sm">
-                    <div className="flex items-center justify-between py-3">
-                      <dt className="text-muted">Size</dt>
-                      <dd className="font-medium text-navy">{config.size}</dd>
-                    </div>
-                    <div className="flex items-center justify-between py-3">
-                      <dt className="text-muted">Price</dt>
-                      <dd className="font-medium text-navy">{config.price}</dd>
-                    </div>
-                  </dl>
-                  <a
-                    href="#lead-form"
-                    className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full bg-navy px-6 py-3.5 text-sm font-semibold text-cream transition hover:bg-navy-deep"
-                  >
-                    Get Price Details
-                    <Icon name="arrow" className="size-4" />
-                  </a>
-                </div>
-              </article>
-            ))}
+            <div className="mt-12 grid gap-6 lg:grid-cols-2">
+              {CONFIGURATIONS.map((config) => (
+                <article
+                  key={config.type}
+                  className="overflow-hidden rounded-3xl border border-line bg-cream"
+                >
+                  <div className="relative h-48 sm:h-56">
+                    <Image
+                      src={config.image}
+                      alt={config.alt}
+                      fill
+                      sizes="(min-width: 1024px) 620px, 100vw"
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="p-7 sm:p-8">
+                    <h3 className="font-display text-2xl font-semibold text-black">
+                      {config.type}
+                    </h3>
+                    <dl className="mt-6 divide-y divide-line border-y border-line text-sm">
+                      <div className="flex items-center justify-between py-3">
+                        <dt className="text-muted">Size</dt>
+                        <dd className="font-medium text-navy">{config.size}</dd>
+                      </div>
+                      <div className="flex items-center justify-between py-3">
+                        <dt className="text-muted">Price</dt>
+                        <dd className="font-medium text-navy">{config.price}</dd>
+                      </div>
+                    </dl>
+                    <a
+                      href="#lead-form"
+                      className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full bg-navy px-6 py-3.5 text-sm font-semibold text-cream transition hover:bg-navy-deep"
+                    >
+                      Get Price Details
+                      <Icon name="arrow" className="size-4" />
+                    </a>
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            <p className="mt-8 rounded-2xl border border-gold/30 bg-gold-tint/50 px-6 py-4 text-sm text-navy">
+              Exact pricing and floor plans shared on enquiry only — pre-launch rates available
+              for a limited period.
+            </p>
           </div>
+        </section>
 
-          <p className="mt-8 rounded-2xl border border-gold/30 bg-gold-tint/50 px-6 py-4 text-sm text-navy">
-            Exact pricing and floor plans shared on enquiry only — pre-launch rates available for
-            a limited period.
-          </p>
+        {/* ── PROJECT DETAILS · the brief's Location & Residential Offering tables ── */}
+        <section className="relative isolate overflow-hidden">
+          <Image
+            src="/details-backdrop.webp"
+            alt=""
+            fill
+            sizes="100vw"
+            className="-z-10 object-cover"
+          />
+          <div aria-hidden="true" className="absolute inset-0 -z-10 bg-black/70" />
+
+          <div className="mx-auto w-full max-w-7xl px-5 py-16 sm:px-8 lg:py-24">
+            <SectionLabel dark>Project Details</SectionLabel>
+            <h2 className="font-display mt-6 text-3xl leading-tight font-semibold text-white sm:text-4xl lg:text-5xl">
+              About the Property
+            </h2>
+
+            <div className="mt-12 grid gap-[30px] lg:grid-cols-2">
+              {SPEC_TABLES.map((table) => (
+                <div
+                  key={table.title}
+                  className="rounded-3xl border border-line bg-white p-7 sm:p-9"
+                >
+                  <h3 className="font-display text-xl font-semibold text-navy">{table.title}</h3>
+                  <dl className="mt-6 divide-y divide-line border-t border-line text-sm">
+                    {table.rows.map(([term, value]) => (
+                      <div
+                        key={term}
+                        className="grid gap-1 py-3.5 sm:grid-cols-[11rem_1fr] sm:gap-4"
+                      >
+                        <dt className="text-muted">{term}</dt>
+                        <dd className="font-medium text-navy">{value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </div>
+              ))}
+            </div>
+          </div>
         </section>
 
         {/* ── SECTION 4 · CAMPUS ECOSYSTEM ───────────────────────────────── */}
@@ -372,7 +476,7 @@ export default function Home() {
               <h2 className="font-display text-3xl leading-tight font-semibold text-white sm:text-4xl lg:text-5xl">
                 More Than a Home — An Integrated Address
               </h2>
-              <p className="text-base leading-relaxed text-white/60">
+              <p className="max-w-3xl text-base leading-relaxed text-white/60 lg:text-lg">
                 Ghansoli is fast becoming Navi Mumbai&apos;s next major corporate and lifestyle
                 corridor.
               </p>
@@ -405,41 +509,43 @@ export default function Home() {
         </section>
 
         {/* ── SECTION 5 · LOCATION & CONNECTIVITY ────────────────────────── */}
-        <section className="mx-auto w-full max-w-7xl px-5 py-16 sm:px-8 lg:py-24">
-          <SectionLabel>Location</SectionLabel>
-          <h2 className="font-display mt-6 text-3xl leading-tight font-semibold text-navy sm:text-4xl lg:text-5xl">
-            Where Ghansoli Stands
-          </h2>
+        <section className="bg-white">
+          <div className="mx-auto w-full max-w-7xl px-5 py-16 sm:px-8 lg:py-24">
+            <SectionLabel>Location</SectionLabel>
+            <h2 className="font-display mt-6 text-3xl leading-tight font-semibold text-black sm:text-4xl lg:text-5xl">
+              Where Ghansoli Stands
+            </h2>
 
-          <div className="mt-12 grid gap-8 lg:grid-cols-2 lg:gap-10">
-            <div className="overflow-hidden rounded-3xl border border-line bg-white">
-              <iframe
-                src={MAP_SRC}
-                title="Map of Ghansoli, Navi Mumbai near Reliance Corporate Park"
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                className="h-80 w-full lg:h-full lg:min-h-[26rem]"
-              />
-            </div>
+            <div className="mt-12 grid gap-8 lg:grid-cols-2 lg:gap-10">
+              <div className="overflow-hidden rounded-3xl border border-line bg-white">
+                <iframe
+                  src={MAP_SRC}
+                  title="Map of Ghansoli, Navi Mumbai near Reliance Corporate Park"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  className="h-80 w-full lg:h-full lg:min-h-[26rem]"
+                />
+              </div>
 
-            <div className="flex flex-col justify-between rounded-3xl border border-line bg-white p-7 sm:p-9">
-              <ul className="divide-y divide-line">
-                {LOCATION_POINTS.map((point) => (
-                  <li key={point} className="flex items-start gap-4 py-4 first:pt-0">
-                    <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-gold" />
-                    <span className="text-sm leading-relaxed text-navy sm:text-base">
-                      {point}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-              <a
-                href="#lead-form"
-                className="mt-8 inline-flex items-center justify-center gap-2 rounded-full border border-navy/20 px-6 py-3.5 text-sm font-semibold text-navy transition hover:bg-navy hover:text-cream"
-              >
-                Ask About Connectivity
-                <Icon name="arrow" className="size-4" />
-              </a>
+              <div className="flex flex-col justify-between rounded-3xl border border-line bg-white p-7 sm:p-9">
+                <ul className="divide-y divide-line">
+                  {LOCATION_POINTS.map((point) => (
+                    <li key={point} className="flex items-start gap-4 py-4 first:pt-0">
+                      <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-gold" />
+                      <span className="text-sm leading-relaxed text-navy sm:text-base">
+                        {point}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                <a
+                  href="#lead-form"
+                  className="mt-8 inline-flex items-center justify-center gap-2 rounded-full border border-navy/20 px-6 py-3.5 text-sm font-semibold text-navy transition hover:bg-navy hover:text-cream"
+                >
+                  Ask About Connectivity
+                  <Icon name="arrow" className="size-4" />
+                </a>
+              </div>
             </div>
           </div>
         </section>
@@ -527,19 +633,25 @@ export default function Home() {
         </div>
 
         {/* ── SECTION 8 · FAQ ────────────────────────────────────────────── */}
-        <section className="mx-auto w-full max-w-7xl px-5 py-16 sm:px-8 lg:py-24">
-          <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-14">
+        <section className="bg-white">
+          <div className="mx-auto grid w-full max-w-7xl gap-10 px-5 py-16 sm:px-8 lg:grid-cols-[0.85fr_1.15fr] lg:gap-14 lg:py-24">
             <div>
               <SectionLabel>FAQ</SectionLabel>
-              <h2 className="font-display mt-6 text-3xl leading-tight font-semibold text-navy sm:text-4xl">
+              <h2 className="font-display mt-6 text-3xl leading-tight font-semibold text-black sm:text-4xl lg:text-5xl">
                 Find answers to common questions about this project
               </h2>
-              <div className="mt-8 hidden h-72 overflow-hidden rounded-3xl border border-line lg:block">
-                <TowerVisual uid="faq" className="size-full" />
+              <div className="relative mt-8 hidden h-72 overflow-hidden rounded-3xl border border-line lg:block">
+                <Image
+                  src="/faq-aerial.webp"
+                  alt="Aerial view of high-rise residential towers beside a waterfront"
+                  fill
+                  sizes="(min-width: 1024px) 45vw, 100vw"
+                  className="object-cover"
+                />
               </div>
             </div>
 
-            <div className="divide-y divide-line rounded-3xl border border-line bg-white px-6 sm:px-8">
+            <div className="divide-y divide-line rounded-3xl border border-line bg-cream px-6 sm:px-8">
               {FAQS.map((faq) => (
                 <details key={faq.q} className="group py-5">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-6 text-left">
@@ -569,8 +681,8 @@ export default function Home() {
       </main>
 
       {/* ── FOOTER ───────────────────────────────────────────────────────── */}
-      <footer className="mx-auto w-full max-w-7xl px-5 pb-8 sm:px-8">
-        <div className="overflow-hidden rounded-3xl bg-navy px-8 pt-12 sm:px-12">
+      <footer className="overflow-hidden bg-black">
+        <div className="mx-auto w-full max-w-7xl px-5 pt-12 sm:px-8">
           <div className="grid gap-10 border-b border-white/10 pb-10 lg:grid-cols-2">
             <div>
               <p className="text-[10px] tracking-[0.18em] text-white/40 uppercase">
@@ -606,8 +718,12 @@ export default function Home() {
             </div>
           </div>
 
+          <p className="pt-8 text-left text-xs text-white/40">
+            © {new Date().getFullYear()} {CONTACT.name} · {CONTACT.role}
+          </p>
+
           <p
-            className="font-display -mb-3 pt-10 text-center text-[18vw] leading-[0.8] font-semibold text-white/[0.07] select-none lg:text-[13rem]"
+            className="font-display -mb-3 pt-8 text-center text-[18vw] leading-[0.8] font-semibold text-white/[0.07] select-none lg:text-[13rem]"
             aria-hidden="true"
           >
             GHANSOLI

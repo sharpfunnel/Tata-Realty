@@ -1,5 +1,7 @@
 export const CONTACT = {
   name: "Rahul Thakur",
+  // The brief's form copy uses the first name only.
+  firstName: "Rahul",
   role: "Channel Partner for Tata Realty",
   location: "Vashi, Navi Mumbai",
   phone: "+91 96993 22332",

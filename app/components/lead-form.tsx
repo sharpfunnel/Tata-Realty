@@ -21,6 +21,7 @@ type Props = {
 
 const styles = {
   light: {
+    frame: "border-line bg-white",
     label: "text-muted",
     field:
       "border-line bg-white text-ink placeholder:text-muted/60 focus:border-gold focus:ring-gold/25",
@@ -28,6 +29,7 @@ const styles = {
     error: "text-red-600",
   },
   dark: {
+    frame: "border-white/15 bg-white/[0.03]",
     label: "text-white/55",
     field:
       "border-white/15 bg-white/[0.06] text-white placeholder:text-white/35 focus:border-gold focus:ring-gold/30",
@@ -104,7 +106,7 @@ export default function LeadForm({
           Thank you — request received
         </p>
         <p className={`mt-2 text-sm ${s.note}`}>
-          {CONTACT.name} will call you within 30 minutes.
+          {CONTACT.firstName} will call you within 30 minutes.
         </p>
       </div>
     );
@@ -117,7 +119,7 @@ export default function LeadForm({
       id={id}
       onSubmit={handleSubmit}
       noValidate
-      className="grid gap-4 sm:grid-cols-2"
+      className={`grid gap-4 rounded-3xl border p-6 sm:grid-cols-2 sm:p-8 ${s.frame}`}
     >
       <div className="sm:col-span-2">
         <label htmlFor={`${id}-name`} className={`mb-2 block text-xs font-medium tracking-wide uppercase ${s.label}`}>
@@ -202,7 +204,7 @@ export default function LeadForm({
       </button>
 
       <p className={`sm:col-span-2 text-center text-xs ${s.note}`}>
-        100% free &amp; confidential · {CONTACT.name} calls back within 30 minutes
+        100% free &amp; confidential · {CONTACT.firstName} calls back within 30 minutes
       </p>
     </form>
   );
