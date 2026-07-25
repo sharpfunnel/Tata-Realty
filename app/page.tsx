@@ -104,6 +104,77 @@ const ECOSYSTEM = [
   },
 ];
 
+// Generic residential amenities — the brief names none, only "Premium lifestyle
+// amenities + large open spaces". Confirm the real amenity list with the client.
+const AMENITIES = [
+  {
+    icon: "parking",
+    title: "Parking space",
+    body: "Secure and spacious parking available for residents and visitors.",
+  },
+  {
+    icon: "elevator",
+    title: "Elevator access",
+    body: "Modern elevators providing smooth access to all floors.",
+  },
+  {
+    icon: "children",
+    title: "Children's play",
+    body: "Safe and engaging play areas designed for children of all ages.",
+  },
+  {
+    icon: "speedy",
+    title: "Speedy internet",
+    body: "High-speed internet connection for work, entertainment and smart living.",
+  },
+  {
+    icon: "fire",
+    title: "Fire protection",
+    body: "Advanced fire safety systems ensuring protection and peace of mind.",
+  },
+  {
+    icon: "yoga",
+    title: "Yoga equipment",
+    body: "Dedicated yoga equipment supporting wellness and daily fitness.",
+  },
+];
+
+// Cards 1-3 restate connectivity facts from the brief. Cards 4-6 (shopping,
+// schools, healthcare) are generic - the brief names no specific landmarks or
+// distances. Confirm real names/distances with the client before ads go live.
+const NEARBY = [
+  {
+    icon: "road",
+    title: "Highways & Roads",
+    body: "Well connected to Thane, Vashi and greater Mumbai.",
+  },
+  {
+    icon: "briefcase",
+    title: "Business Parks",
+    body: "Adjacent to Reliance Corporate Park and the upcoming Adani Commercial Park.",
+  },
+  {
+    icon: "monitor",
+    title: "IT & Corporate Hubs",
+    body: "A strong IT and corporate catchment right on the doorstep.",
+  },
+  {
+    icon: "bag",
+    title: "Shopping & Retail",
+    body: "Retail and shopping options across the growing Ghansoli corridor.",
+  },
+  {
+    icon: "cap",
+    title: "Schools & Education",
+    body: "Schools and educational institutions within easy reach.",
+  },
+  {
+    icon: "health",
+    title: "Healthcare",
+    body: "Hospitals and clinics serving the wider Navi Mumbai region.",
+  },
+];
+
 const LOCATION_POINTS = [
   "Adjacent to Reliance Corporate Park",
   "Close to upcoming 100-acre Adani Commercial Park",
@@ -186,6 +257,63 @@ function CardIcon({ name, className = "size-6" }: { name: string; className?: st
   );
 }
 
+/** Client-supplied amenity glyphs — each keeps its own viewBox, rendered filled. */
+const AMENITY_ICONS: Record<string, { viewBox: string; body: React.ReactNode }> = {
+  parking: {
+    viewBox: "0 0 272.523 272.523",
+    body: (
+      <>
+        <path d="M193.26 118.059c-.877 0-1.777.126-2.677.373l-10.172 2.802-10.561-25.73c-2.993-7.289-11.838-13.22-19.717-13.22h-98.85c-7.88 0-16.724 5.931-19.716 13.22l-10.548 25.694-10.046-2.767a10 10 0 0 0-2.676-.373c-4.808 0-8.297 3.673-8.297 8.732v5.996c0 5.906 4.806 10.712 10.712 10.712h1.151l-1.705 4.153c-2.78 6.77-5.043 18.236-5.043 25.558v51.115c0 5.906 4.806 10.712 10.712 10.712h13.99c5.906 0 10.712-4.806 10.712-10.712V211.56h120.357v12.764c0 5.906 4.806 10.712 10.712 10.712h13.988c5.906 0 10.712-4.806 10.712-10.712V173.21c0-7.321-2.263-18.787-5.043-25.558l-1.705-4.153h1.294c5.906 0 10.712-4.806 10.712-10.712v-5.996c.001-5.059-3.489-8.732-8.296-8.732zM28.698 137.681l15.978-38.918c1.79-4.36 7.11-7.928 11.823-7.928h88.418c4.713 0 10.033 3.567 11.823 7.928l15.978 38.918c1.789 4.36-.602 7.928-5.315 7.928H34.014c-4.714-.001-7.105-3.568-5.316-7.928zm35.667 49.227a4.297 4.297 0 0 1-4.284 4.284H29.729a4.297 4.297 0 0 1-4.285-4.284v-14.566a4.297 4.297 0 0 1 4.285-4.284h30.352a4.3 4.3 0 0 1 4.284 4.284zm111.319 0a4.297 4.297 0 0 1-4.284 4.284h-30.352a4.3 4.3 0 0 1-4.284-4.284v-14.566a4.3 4.3 0 0 1 4.284-4.284H171.4a4.3 4.3 0 0 1 4.284 4.284z" />
+        <path d="M259.125 37.486H208.39c-7.388 0-13.398 6.011-13.398 13.398v50.736c0 7.388 6.011 13.399 13.398 13.399h20.367v113.872a5 5 0 0 0 5 5 5 5 0 0 0 5-5V115.02h20.368c7.388 0 13.398-6.011 13.398-13.399V50.885c0-7.388-6.01-13.399-13.398-13.399zm-11.491 42.067c-2.918 2.627-7.216 3.959-12.774 3.959h-7.347c-.882 0-1.6.719-1.6 1.601v12.389a2.443 2.443 0 0 1-2.441 2.44h-5.564a2.443 2.443 0 0 1-2.441-2.44V55.007a2.444 2.444 0 0 1 2.441-2.442h14.016c9.285 0 12.751 1.399 15.599 3.816 3.004 2.549 4.526 6.453 4.526 11.606-.001 5.035-1.485 8.925-4.415 11.566z" />
+        <path d="M239.681 62.825c-1.356-1.024-3.755-1.544-7.129-1.544h-5.039c-.882 0-1.6.718-1.6 1.599v10.182c0 .881.718 1.599 1.6 1.599h3.019c1.109 0 2.901-.082 3.994-.183 1.061-.097 4.056-.531 5.155-1.361 1.319-.998 1.988-2.724 1.988-5.129 0-2.428-.669-4.165-1.988-5.163z" />
+      </>
+    ),
+  },
+  elevator: {
+    viewBox: "0 0 512 512",
+    body: (
+      <path d="M153 35v58h206V35zm60.3 13h32l-16 32zm74.7 0 16 32h-32zm-183 89v350h142V137zm160 0v350h142V137zm173 141v84h52v-84zm26 26a16 16 0 0 1 16 16 16 16 0 0 1-16 16 16 16 0 0 1-16-16 16 16 0 0 1 16-16" />
+    ),
+  },
+  children: {
+    viewBox: "0 0 511.299 511.299",
+    body: (
+      <path d="M478.742 32.557c-43.386-43.409-114.02-43.409-157.407 0L211.144 142.748l-15.738-15.738c-8.682-8.704-22.773-8.704-31.477 0L6.522 284.416A22.2 22.2 0 0 0 0 300.154a22.24 22.24 0 0 0 6.522 15.738l62.954 62.954a22.24 22.24 0 0 0 15.738 6.522 22.26 22.26 0 0 0 15.761-6.522L258.36 221.44c8.704-8.682 8.704-22.773 0-31.477l-15.738-15.738 47.638-47.616c3.206 23.174 13.29 45.568 31.076 63.354s40.181 27.871 63.377 31.076l-47.638 47.638-15.738-15.738c-8.704-8.704-22.795-8.704-31.477 0L132.452 410.323c-8.704 8.704-8.704 22.795 0 31.499l62.954 62.954a22.24 22.24 0 0 0 15.738 6.522 22.2 22.2 0 0 0 15.738-6.522l157.43-157.406c4.163-4.185 6.522-9.839 6.522-15.738s-2.36-11.576-6.522-15.738l-15.761-15.738 110.191-110.191c43.409-43.388 43.409-114.022 0-157.408m-31.477 125.929c-26.045 26.001-68.408 26.023-94.453 0-26.023-26.045-26.023-68.408 0-94.453C365.835 51.01 382.953 44.51 400.05 44.51c17.096 0 34.193 6.5 47.215 19.523 26.046 26.046 26.046 68.408 0 94.453" />
+    ),
+  },
+  speedy: {
+    viewBox: "0 0 24 24",
+    body: (
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M7.25 1.25a6 6 0 0 0-6 6v9.5a6 6 0 0 0 6 6h9.5a6 6 0 0 0 6-6v-9.5a6 6 0 0 0-6-6zm-1.792 9.8c3.972-3.067 9.112-3.067 13.084 0a.75.75 0 1 0 .916-1.187c-4.511-3.484-10.404-3.484-14.916 0a.75.75 0 1 0 .916 1.188Zm9.723 2.991c-1.935-1.498-4.434-1.498-6.369 0a.75.75 0 1 1-.918-1.186c2.475-1.917 5.73-1.917 8.205 0a.75.75 0 1 1-.918 1.186M12 15a1.5 1.5 0 0 0 0 3h.008a1.5 1.5 0 0 0 0-3z"
+      />
+    ),
+  },
+  fire: {
+    viewBox: "-32 0 512 512",
+    body: (
+      <path d="m434.027 26.329-168 28C254.693 56.218 256 67.8 256 72h-58.332C208.353 36.108 181.446 0 144 0c-39.435 0-66.368 39.676-52.228 76.203-52.039 13.051-75.381 54.213-90.049 90.884-4.923 12.307 1.063 26.274 13.37 31.197 12.317 4.926 26.279-1.075 31.196-13.37C75.058 112.99 106.964 120 168 120v27.076c-41.543 10.862-72 49.235-72 94.129V488c0 13.255 10.745 24 24 24h144c13.255 0 24-10.745 24-24V240c0-44.731-30.596-82.312-72-92.97V120h40c0 2.974-1.703 15.716 10.027 17.671l168 28C441.342 166.89 448 161.25 448 153.834V38.166c0-7.416-6.658-13.056-13.973-11.837M144 72c-8.822 0-16-7.178-16-16s7.178-16 16-16 16 7.178 16 16-7.178 16-16 16" />
+    ),
+  },
+  yoga: {
+    viewBox: "0 0 512 512",
+    body: (
+      <path d="M482.752 435.574c-6.928-8.1-23.127-40.492-23.127-40.492s2.676-3.448 0-15.051c-3.48-15.035-18.514-13.886-21.978-17.349-3.479-3.472-33.549-58.424-35.863-64.792s-27.772-78.662-27.772-78.662c-8.549-37.604-24.308-53.221-45.121-57.85-20.64-4.581-31.817-3.471-41.075-11.571-5.778-5.054-5.573-8.809-5.573-24.056 0 0 6.235-5.927 10.784-14.122 5.195-9.375 7.746-22.907 7.746-22.907 5.211-2.086 5.274-4.684 7.525-12.965 3.118-11.461 2.897-19.317-5.431-19.317C304.836 19.066 286.085 0 256 0c-30.07 0-48.821 19.066-46.853 56.441-8.328 0-8.564 7.856-5.432 19.317 2.251 8.281 2.314 10.879 7.51 12.965 0 0 2.55 13.532 7.762 22.907 4.55 8.194 10.784 14.122 10.784 14.122 0 15.247.189 19.002-5.589 24.056-9.242 8.1-20.435 6.99-41.059 11.571-20.828 4.628-36.572 20.246-45.12 57.85 0 0-25.457 72.294-27.771 78.662s-32.401 61.32-35.864 64.792c-3.464 3.463-18.514 2.314-21.978 17.349-2.676 11.603 0 15.051 0 15.051s-16.2 32.392-23.143 40.492c-6.942 8.092 5.794 13.878 13.886 3.464.944 1.409 4.156 2.424 7.793 2.912-28.228 31.251-12.138 71.964 31.55 69.98C118.291 510.3 256 485.316 256 485.316S393.707 510.3 429.54 511.93c43.688 1.984 59.778-38.729 31.534-69.98 3.652-.488 6.864-1.503 7.808-2.912 8.092 10.414 20.813 4.628 13.87-3.464m-299.629-51.725s-59.274 17.626-96.192 34.234c7.604-14.154 16.357-33.423 16.357-33.423l37.029-53.212 29.504-64.218s9.257 34.714 12.138 39.917c2.896 5.203 1.164 76.702 1.164 76.702m145.768 0s-1.732-71.498 1.149-76.702c2.897-5.203 12.154-39.917 12.154-39.917l29.504 64.218 37.013 53.212s8.769 19.27 16.373 33.423c-36.919-16.609-96.193-34.234-96.193-34.234" />
+    ),
+  },
+};
+
+function AmenityIcon({ name, className = "size-6" }: { name: string; className?: string }) {
+  const icon = AMENITY_ICONS[name];
+  return (
+    <svg viewBox={icon.viewBox} fill="currentColor" className={className} aria-hidden="true">
+      {icon.body}
+    </svg>
+  );
+}
+
 function Icon({ name, className = "size-5" }: { name: string; className?: string }) {
   const paths: Record<string, React.ReactNode> = {
     phone: (
@@ -198,6 +326,42 @@ function Icon({ name, className = "size-5" }: { name: string; className?: string
       </>
     ),
     arrow: <path d="M5 12h14M13 6l6 6-6 6" />,
+    road: (
+      <>
+        <path d="M4 21 8 3M20 21 16 3" />
+        <path d="M12 4v3M12 10.5v3M12 17v3" />
+      </>
+    ),
+    briefcase: (
+      <>
+        <rect x="3" y="7" width="18" height="13" rx="2" />
+        <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12.5h18" />
+      </>
+    ),
+    monitor: (
+      <>
+        <rect x="3" y="4" width="18" height="12" rx="2" />
+        <path d="M8 20h8M12 16v4" />
+      </>
+    ),
+    bag: (
+      <>
+        <path d="M6 8h12l-1 12H7L6 8Z" />
+        <path d="M9 8V6a3 3 0 0 1 6 0v2" />
+      </>
+    ),
+    cap: (
+      <>
+        <path d="M12 4 2 9l10 5 10-5-10-5Z" />
+        <path d="M6 11v5c0 1 2.6 2.5 6 2.5s6-1.5 6-2.5v-5" />
+      </>
+    ),
+    health: (
+      <>
+        <rect x="4" y="4" width="16" height="16" rx="3" />
+        <path d="M12 8v8M8 12h8" />
+      </>
+    ),
   };
 
   return (
@@ -268,8 +432,7 @@ export default function Home() {
             </span>
           </div>
           <ActionButton href={CONTACT.phoneHref} icon="phone" className="py-1.5 pl-5">
-            <span className="hidden sm:inline">Call {CONTACT.name}</span>
-            <span className="sm:hidden">Call now</span>
+            Call Us
           </ActionButton>
         </div>
       </header>
@@ -310,7 +473,7 @@ export default function Home() {
                     icon="phone"
                     className="w-full justify-between sm:w-auto sm:justify-start"
                   >
-                    Call {CONTACT.name}
+                    Call Us
                   </ActionButton>
                 </div>
               </div>
@@ -531,6 +694,44 @@ export default function Home() {
           </div>
         </section>
 
+        {/* ── AMENITIES ──────────────────────────────────────────────────── */}
+        <section className="bg-cream">
+          <div data-reveal className="mx-auto w-full max-w-7xl px-5 py-16 sm:px-8 lg:py-24">
+            <SectionLabel>Our Amenities</SectionLabel>
+            <div className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_1fr] lg:items-end">
+              <h2 className="font-display text-3xl leading-tight font-semibold text-black sm:text-4xl lg:text-5xl">
+                Exceptional amenities for residents&apos; comfort
+              </h2>
+              <p className="max-w-md text-base leading-relaxed text-muted lg:text-lg">
+                Carefully designed facilities ensuring safety, relaxation, wellness and daily
+                conveniences.
+              </p>
+            </div>
+
+            <div className="mt-12 grid gap-px overflow-hidden rounded-3xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">
+              {AMENITIES.map((item) => (
+                <article
+                  key={item.title}
+                  className="group relative overflow-hidden bg-white p-7 sm:p-9"
+                >
+                  {/* Dotted texture in the corner, echoing the reference */}
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute -top-2 right-3 size-24 opacity-60 [background-image:radial-gradient(var(--color-line)_1.2px,transparent_1.2px)] [background-size:9px_9px]"
+                  />
+                  <span className="relative grid size-12 place-items-center rounded-xl bg-cream text-black transition group-hover:bg-gold-tint">
+                    <AmenityIcon name={item.icon} className="size-6" />
+                  </span>
+                  <h3 className="font-display mt-8 text-lg font-semibold text-black">
+                    {item.title}
+                  </h3>
+                  <p className="mt-2.5 text-sm leading-relaxed text-muted">{item.body}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* ── SECTION 5 · LOCATION & CONNECTIVITY ────────────────────────── */}
         <section className="bg-white">
           <div data-reveal className="mx-auto w-full max-w-7xl px-5 py-16 sm:px-8 lg:py-24">
@@ -569,6 +770,41 @@ export default function Home() {
                   Ask About Connectivity
                 </ActionButton>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── NEARBY · what's around the property ─────────────────────────── */}
+        <section className="bg-white">
+          <div data-reveal className="mx-auto w-full max-w-7xl px-5 py-16 sm:px-8 lg:py-24">
+            <SectionLabel>Neighbourhood</SectionLabel>
+            <div className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_1fr] lg:items-end">
+              <h2 className="font-display text-3xl leading-tight font-semibold text-black sm:text-4xl lg:text-5xl">
+                Everything you need, close by
+              </h2>
+              <p className="max-w-md text-base leading-relaxed text-muted lg:text-lg">
+                Highways, business parks, shopping, schools and healthcare within easy reach of
+                Ghansoli.
+              </p>
+            </div>
+
+            <div className="mt-12 grid gap-[30px] sm:grid-cols-2 lg:grid-cols-3">
+              {NEARBY.map((item) => (
+                <article
+                  key={item.title}
+                  className="flex items-start gap-4 rounded-2xl border border-line bg-cream p-6 transition hover:border-gold/60 sm:p-7"
+                >
+                  <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-white text-black">
+                    <Icon name={item.icon} className="size-6" />
+                  </span>
+                  <div>
+                    <h3 className="font-display text-lg font-semibold text-black">
+                      {item.title}
+                    </h3>
+                    <p className="mt-1.5 text-sm leading-relaxed text-muted">{item.body}</p>
+                  </div>
+                </article>
+              ))}
             </div>
           </div>
         </section>
