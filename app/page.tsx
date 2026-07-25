@@ -40,14 +40,14 @@ const CONFIGURATIONS = [
   {
     type: "2 BHK",
     size: "~750+ sq.ft",
-    price: "[client to fill]",
+    price: "₹1.99 Cr",
     image: "/config-2bhk.webp",
     alt: "Residents' lounge with bar seating and a games zone",
   },
   {
     type: "3 BHK",
     size: "~970 to 1,155 sq.ft",
-    price: "[client to fill]",
+    price: "₹3 Cr",
     image: "/config-3bhk.webp",
     alt: "Landscaped lobby with lounge seating and a sculpture",
   },
@@ -80,7 +80,8 @@ const SPEC_TABLES = [
       ["Views", "Lifetime open green / hill views"],
       ["Amenities", "Premium lifestyle amenities + large open spaces"],
       ["Launch Status", "Pre-Launch"],
-      ["Price", "To be confirmed"],
+      ["2 BHK Price", "₹1.99 Cr"],
+      ["3 BHK Price", "₹3 Cr"],
       ["Possession", "To be confirmed"],
     ],
   },
@@ -1002,7 +1003,7 @@ export default function Home() {
       </a>
       <a
         href={CONTACT.phoneHref}
-        aria-label={`Call ${CONTACT.name}`}
+        aria-label="Call us"
         className="fixed bottom-5 left-5 z-50 grid size-14 place-items-center rounded-full bg-black text-gold shadow-lg transition hover:bg-black/85 lg:hidden"
       >
         <Icon name="phone" className="size-6" />
