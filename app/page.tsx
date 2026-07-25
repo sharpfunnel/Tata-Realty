@@ -7,6 +7,7 @@ const MAP_SRC =
   "https://www.google.com/maps?q=Reliance+Corporate+Park,+Ghansoli,+Navi+Mumbai&output=embed";
 
 const HERO_STATS = [
+  { value: "₹99 Lakhs*", label: "Starting price" },
   { value: "47.5 Acres", label: "Integrated development" },
   { value: "₹5,000+ Cr", label: "Total investment" },
   { value: "Ghansoli", label: "Navi Mumbai" },
@@ -504,13 +505,13 @@ export default function Home() {
            * however the cells wrap.
            */}
           <div className="relative z-20 mx-auto h-0 w-full max-w-7xl px-5 sm:px-8">
-            <dl className="grid -translate-y-1/2 grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line shadow-[0_18px_44px_-24px_rgba(0,0,0,0.45)] lg:grid-cols-4">
+            <dl className="grid -translate-y-1/2 grid-cols-5 gap-px overflow-hidden rounded-2xl border border-line bg-line shadow-[0_18px_44px_-24px_rgba(0,0,0,0.45)]">
               {HERO_STATS.map((stat) => (
-                <div key={stat.value} className="bg-white px-5 py-6 sm:px-7">
-                  <dt className="font-display text-xl font-semibold text-black sm:text-2xl">
+                <div key={stat.value} className="bg-white px-2.5 py-4 sm:px-5 sm:py-6 lg:px-7">
+                  <dt className="font-display text-sm leading-tight font-semibold text-black sm:text-xl lg:text-2xl">
                     {stat.value}
                   </dt>
-                  <dd className="mt-1 text-xs tracking-wide text-muted uppercase">
+                  <dd className="mt-1 text-[9px] leading-tight tracking-wide text-muted uppercase sm:text-xs">
                     {stat.label}
                   </dd>
                 </div>
