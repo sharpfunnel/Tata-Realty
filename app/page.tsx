@@ -487,14 +487,14 @@ export default function Home() {
            * sky-to-field gradient anchored, so the fixed height eats into the
            * blank sky at the top rather than the composition.
            */}
-          <div className="relative aspect-[3/2] w-full overflow-hidden sm:aspect-[16/9] lg:aspect-auto lg:h-[950px]">
+          <div className="relative aspect-[4/3] w-full overflow-hidden">
             <Image
               src="/hero-home.webp"
               alt="High-rise residential tower beside open green fields"
               fill
               priority
               sizes="100vw"
-              className="object-cover object-bottom"
+              className="object-cover object-center"
             />
           </div>
 
