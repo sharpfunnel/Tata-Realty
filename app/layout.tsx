@@ -62,6 +62,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         </noscript>
         {/* End Google Tag Manager (noscript) */}
         {children}
+
+        {/* First-party analytics — feeds the /admin panel. Loaded after
+            interaction so it never competes with the hero render. */}
+        <Script src="/tracker.js" strategy="afterInteractive" />
       </body>
     </html>
   );

@@ -6,6 +6,8 @@ import { BUDGET_OPTIONS, CONFIG_OPTIONS, CONTACT, whatsappLink } from "../lib/si
 declare global {
   interface Window {
     fbq?: (...args: unknown[]) => void;
+    /** Set by public/tracker.js — links this submission to the visit. */
+    __trSessionId?: string;
   }
 }
 
@@ -67,6 +69,24 @@ export default function LeadForm({
 
     // Meta conversion event - Pixel ID still pending from client.
     window.fbq?.("track", "Lead");
+
+    // Persist to the admin panel. Fire-and-forget: the WhatsApp hand-off below
+    // must stay in the same synchronous tick or the browser blocks the popup,
+    // and a slow database must never delay the user's enquiry.
+    void fetch("/api/lead", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        clientId: window.__trSessionId,
+        name,
+        phone,
+        budgetRange: budget,
+        configuration: withConfiguration ? configuration : undefined,
+      }),
+      keepalive: true,
+    }).catch(() => {
+      // Never block the enquiry on an analytics failure.
+    });
 
     const lines = [
       "Hi, I am interested in Tata Realty Ghansoli pre-launch. Please share details.",

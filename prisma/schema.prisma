@@ -1,0 +1,90 @@
+// Prisma 7: the datasource URL lives in prisma.config.ts, not in `env()` here.
+// The `prisma-client` generator requires an explicit output path.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// Analytics session — one per browser tab visit (sessionStorage-scoped).
+model Session {
+  id            String   @id @default(cuid())
+  /// Human-friendly sequential id shown in the admin as "#1042".
+  /// Postgres autoincrement requires the column to be indexed, hence @unique.
+  visitorNumber Int      @unique @default(autoincrement())
+  arrivedAt     DateTime @default(now())
+  device        String
+  isReturning   Boolean  @default(false)
+  ip            String?
+  location      String?
+  source        String?
+  medium        String?
+  campaign      String?
+  durationSec   Int?
+  bounced       Boolean  @default(false)
+  /// Max scroll percentage reached, 0-100.
+  scrollDepth   Int      @default(0)
+  formFilled    Boolean  @default(false)
+  replayUrl     String?
+
+  /// Client-generated id from sessionStorage. The tracker knows this before the
+  /// row exists, so it is the lookup key for every subsequent beacon.
+  clientId      String   @unique
+  /// Stable localStorage id across sessions — what makes isReturning meaningful.
+  visitorId     String?
+  lastSeenAt    DateTime @default(now())
+  /// Counted server-side; a session with >1 interaction has not bounced.
+  eventCount    Int      @default(0)
+
+  events        PageEvent[]
+  lead          Lead?
+
+  @@index([arrivedAt])
+  @@index([visitorId])
+}
+
+/// Enquire Now form submission.
+model Lead {
+  id            String   @id @default(cuid())
+  sessionId     String?  @unique
+  session       Session? @relation(fields: [sessionId], references: [id])
+  name          String
+  phone         String
+  email         String?
+  budgetRange   String?
+  configuration String?
+  submittedAt   DateTime @default(now())
+  /// Full raw payload, kept as an audit trail if the form ever gains fields.
+  raw           Json?
+
+  @@index([submittedAt])
+}
+
+/// Individual interaction beacon. Click/hover rows carry the heatmap coordinates.
+model PageEvent {
+  id        String   @id @default(cuid())
+  sessionId String
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  type      String
+  /// Normalised 0-1 position within the full page, so the heatmap is
+  /// viewport-width independent.
+  xPct      Float?
+  yPct      Float?
+  path      String?
+  timestamp DateTime @default(now())
+
+  @@index([type])
+  @@index([sessionId])
+}
+
+/// Admin panel login. Seeded from env vars — see prisma/seed.ts.
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
