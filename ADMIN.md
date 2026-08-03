@@ -7,9 +7,9 @@ Analytics and lead capture for the Ghansoli landing page. Everything lives under
 | ----------------- | ------------------------------------------- |
 | `/admin/login`    | Email + password sign-in (the only public admin route) |
 | `/admin`          | Redirects to `/admin/sessions`              |
-| `/admin/sessions` | 100 most recent visits, 14 columns          |
+| `/admin/sessions` | 100 most recent visits, 18 columns          |
 | `/admin/leads`    | Every Enquire Now submission                |
-| `/admin/heatmap`  | Click / hover overlay on a live page preview |
+| `/admin/heatmap`  | Click / hover overlay on a page screenshot  |
 
 Public, ungated (the landing page must reach them): `POST /api/track`,
 `POST /api/lead`.
@@ -102,7 +102,8 @@ always built against the current schema.
 | Visitor / session id | `localStorage` (visitor) + `sessionStorage` (session) |
 | New vs returning | Whether a visitor id already existed at load |
 | Device | `navigator.userAgentData.mobile`, falling back to a width + UA check |
-| Source / medium / campaign | `utm_*` params → referrer host → `gclid`/`fbclid` |
+| Source / medium / campaign | `utm_*` params → referrer host → `gclid`/`fbclid`/`msclkid` |
+| Acquisition detail | Captured once per session — see below |
 | **IP, Location** | **Server-side only**, from request headers — never sent by the client |
 | Scroll depth | Max % reached, rAF-throttled, flushed on heartbeat and page hide |
 | Clicks / hovers | Normalised `xPct`/`yPct` (0-1) against the full document |
@@ -117,11 +118,56 @@ Location comes from Vercel's `x-vercel-ip-city` / `x-vercel-ip-country` edge
 headers — free, no third-party geo-IP call. Locally those headers are absent, so
 Location shows `–`.
 
+## Acquisition / UTM tracking
+
+The landing URL's query string is captured **once per session** and cached in
+`sessionStorage` (`tr_smeta`). Reading it on every pageview would be wrong: a
+visitor who lands on `/?utm_source=meta` and then clicks through to a page with
+no query string would have their attribution overwritten with nulls.
+
+Three tiers, most-structured first:
+
+1. **UTM params** — `utmSource`, `utmMedium`, `utmCampaign`, `utmContent`,
+   `utmTerm`.
+2. **Click ids and ad hierarchy** — `gclid` (Google), `fbclid` (Meta),
+   `msclkid` (Microsoft), plus `placement`, `metaCampaignId`, `metaAdsetId`,
+   `metaAdId` when you tag your own Meta ads.
+3. **`rawParams`** — every query param verbatim, as JSON. The safety net: a new
+   ad platform or a custom param is never lost just because it has no column.
+   You can backfill a named column from `rawParams` later; you can never
+   recover data you never captured. It is `NULL` (not `{}`) for direct traffic.
+
+`source`/`medium`/`campaign` remain the *derived* view shown in the Sessions
+table; the `utm*` columns are the raw tags. Keeping both means a change to the
+derivation rules never rewrites history.
+
+### Tagging Meta ads
+
+Use Meta's dynamic URL parameters as the values — Meta fills them in per click:
+
+```
+?utm_source=meta&utm_medium=cpc&utm_campaign={{campaign.name}}
+&utm_content={{ad.name}}&utm_term={{adset.name}}
+&campaign_id={{campaign.id}}&adset_id={{adset.id}}&ad_id={{ad.id}}
+&placement={{placement}}
+```
+
+If you later join this against Meta's spend data, **match on `metaCampaignId`,
+not campaign name** — names get edited after launch and a rename silently
+breaks the join. Both fields are indexed for that query.
+
+### Where it shows
+
+- **Sessions** — `Content (Ad)`, `Term (Adset)`, `Placement`, and a `Params`
+  column showing a count, with the full list in the hover tooltip.
+- **Leads** — an `Attribution` column per lead: `source/medium · campaign`, with
+  ad / adset / placement on a second line. `Direct` when the session carried no
+  tags; `Unknown` when the lead has no session at all (blocked script or DNT).
+
 ## Notes / limits
 
-- **Replay** is a column in the schema and renders a "⊙ Watch" link when
-  `replayUrl` is set, but nothing writes it — session recording is a separate
-  product (rrweb, or a paid tool) and was not in scope. The column shows `–`.
+- **Replay** is recorded with rrweb into `ReplayChunk` rows; the Sessions table
+  links to `/admin/sessions/<id>/replay` for any session that has chunks.
 - **Rate limiting** is in-process (`app/lib/rate-limit.ts`). On Vercel each
   lambda has its own counter, so the real ceiling is *limit × warm instances*.
   That stops a browser or casual script; for a hard global cap, swap the body

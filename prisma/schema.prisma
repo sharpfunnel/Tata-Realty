@@ -23,9 +23,37 @@ model Session {
   isReturning   Boolean  @default(false)
   ip            String?
   location      String?
+  /// Derived, human-readable attribution shown in the sessions table. Falls
+  /// back to referrer host / click-id inference when no UTM tags are present.
   source        String?
   medium        String?
   campaign      String?
+
+  /// --- Acquisition: captured verbatim from the landing URL, once per session.
+  /// `source`/`medium`/`campaign` above are the *derived* view; these are the
+  /// raw tags, kept separate so a derivation change never rewrites history.
+  entryPath      String?
+  referrer       String?
+  utmSource      String?
+  utmMedium      String?
+  utmCampaign    String?
+  utmContent     String?
+  utmTerm        String?
+  /// Ad-platform click ids: Google, Meta, Microsoft.
+  gclid          String?
+  fbclid         String?
+  msclkid        String?
+  /// Meta ad hierarchy, populated from Meta's dynamic URL parameters
+  /// ({{campaign.id}}, {{adset.id}}, {{ad.id}}, {{placement}}).
+  placement      String?
+  metaCampaignId String?
+  metaAdsetId    String?
+  metaAdId       String?
+  /// Every query param on the landing URL, verbatim. The catch-all: a new ad
+  /// platform or a custom param is never lost just because it has no column.
+  /// Null (not `{}`) for direct traffic, so empty rows cost nothing.
+  rawParams      Json?
+
   durationSec   Int?
   bounced       Boolean  @default(false)
   /// Max scroll percentage reached, 0-100.
@@ -48,6 +76,10 @@ model Session {
 
   @@index([arrivedAt])
   @@index([visitorId])
+  /// Covers the common "sessions from campaign X" grouping in the admin.
+  @@index([utmSource, utmMedium, utmCampaign])
+  /// Looked up on its own when joining against ad-platform spend by campaign id.
+  @@index([metaCampaignId])
 }
 
 /// Enquire Now form submission.

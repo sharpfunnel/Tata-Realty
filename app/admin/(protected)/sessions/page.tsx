@@ -27,7 +27,28 @@ const COLUMNS = [
   "Scroll Depth",
   "Form Filled",
   "Replay",
+  // Appended after the original 14 so that specified order is preserved.
+  "Content (Ad)",
+  "Term (Adset)",
+  "Placement",
+  "Params",
 ] as const;
+
+/**
+ * Renders rawParams as a count plus the full list in a `title` tooltip —
+ * cheap, and enough to eyeball an unrecognised param without a modal.
+ */
+function formatRawParams(raw: unknown): { preview: string; full: string } | null {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+
+  const entries = Object.entries(raw as Record<string, unknown>);
+  if (entries.length === 0) return null;
+
+  return {
+    preview: `${entries.length} param${entries.length === 1 ? "" : "s"}`,
+    full: entries.map(([key, value]) => `${key}=${String(value)}`).join("\n"),
+  };
+}
 
 export default async function SessionsPage() {
   const sessions = await prisma.session.findMany({
@@ -75,6 +96,7 @@ export default async function SessionsPage() {
                   // formFilled beacon never landed.
                   const formFilled = session.formFilled || session.lead !== null;
                   const isMobile = session.device === "mobile";
+                  const rawParams = formatRawParams(session.rawParams);
 
                   return (
                     <tr
@@ -166,6 +188,23 @@ export default async function SessionsPage() {
                           >
                             ⊙ Watch
                           </a>
+                        ) : (
+                          DASH
+                        )}
+                      </Td>
+
+                      <Td>{session.utmContent || DASH}</Td>
+                      <Td>{session.utmTerm || DASH}</Td>
+                      <Td>{session.placement || DASH}</Td>
+
+                      <Td className="text-xs text-white/45">
+                        {rawParams ? (
+                          <span
+                            title={rawParams.full}
+                            className="cursor-help underline decoration-white/20 decoration-dotted underline-offset-2"
+                          >
+                            {rawParams.preview}
+                          </span>
                         ) : (
                           DASH
                         )}

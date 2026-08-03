@@ -7,7 +7,44 @@ import {
   ipFromHeaders,
   locationFromHeaders,
 } from "../../lib/request";
-import { deriveBounced, trackPayloadSchema } from "../../lib/tracking";
+import {
+  deriveBounced,
+  trackPayloadSchema,
+  type EntryMeta,
+} from "../../lib/tracking";
+import type { Prisma } from "../../../generated/prisma/client";
+
+/**
+ * Maps the client's acquisition capture onto Session columns.
+ * Empty strings collapse to null so "no value" is one thing in SQL, not two.
+ */
+function acquisitionFields(meta: EntryMeta | undefined) {
+  const value = (raw: string | null | undefined) => raw?.trim() || null;
+
+  const rawParams = meta?.rawParams;
+  return {
+    entryPath: value(meta?.entryPath),
+    referrer: value(meta?.referrer),
+    utmSource: value(meta?.utmSource),
+    utmMedium: value(meta?.utmMedium),
+    utmCampaign: value(meta?.utmCampaign),
+    utmContent: value(meta?.utmContent),
+    utmTerm: value(meta?.utmTerm),
+    gclid: value(meta?.gclid),
+    fbclid: value(meta?.fbclid),
+    msclkid: value(meta?.msclkid),
+    placement: value(meta?.placement),
+    metaCampaignId: value(meta?.metaCampaignId),
+    metaAdsetId: value(meta?.metaAdsetId),
+    metaAdId: value(meta?.metaAdId),
+    // `undefined` tells Prisma "don't set this", leaving the column NULL.
+    // Writing `{}` instead would put an empty JSON blob on every direct visit.
+    rawParams:
+      rawParams && Object.keys(rawParams).length
+        ? (rawParams as Prisma.InputJsonValue)
+        : undefined,
+  };
+}
 
 // Public endpoint: the landing page must reach it without a session.
 // It is deliberately excluded from the proxy.ts matcher.
@@ -62,6 +99,7 @@ export async function POST(request: Request) {
           source: payload.source ?? null,
           medium: payload.medium ?? null,
           campaign: payload.campaign ?? null,
+          ...acquisitionFields(payload.entryMeta),
         },
         // A reload of the same tab re-sends this; only refresh liveness.
         update: { lastSeenAt: new Date() },

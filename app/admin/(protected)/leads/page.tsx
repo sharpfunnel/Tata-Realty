@@ -11,11 +11,74 @@ import {
   Th,
 } from "../ui";
 
+type LeadSession = {
+  source: string | null;
+  medium: string | null;
+  campaign: string | null;
+  utmContent: string | null;
+  utmTerm: string | null;
+  placement: string | null;
+  rawParams: unknown;
+};
+
+/** Full landing-URL params as tooltip text, so odd traffic is inspectable. */
+function rawParamsTitle(raw: unknown): string | undefined {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return undefined;
+
+  const entries = Object.entries(raw as Record<string, unknown>);
+  if (entries.length === 0) return undefined;
+
+  return entries.map(([key, value]) => `${key}=${String(value)}`).join("\n");
+}
+
+function Attribution({ session }: { session: LeadSession | null }) {
+  // No session means the lead was submitted without tracking (blocked script,
+  // Do Not Track). Better to say so than to imply direct traffic.
+  if (!session) return <span className="text-white/25">Unknown</span>;
+
+  const { source, medium, campaign, utmContent, utmTerm, placement } = session;
+
+  if (!source) return <span className="text-white/45">Direct</span>;
+
+  return (
+    <div className="text-xs leading-relaxed" title={rawParamsTitle(session.rawParams)}>
+      <div className="text-white/70">
+        {source}
+        {medium && <span className="text-white/40">/{medium}</span>}
+        {campaign && <span className="text-white/70"> · {campaign}</span>}
+      </div>
+      {(utmContent || utmTerm || placement) && (
+        <div className="text-white/40">
+          {utmContent && `ad: ${utmContent}`}
+          {utmContent && utmTerm && " · "}
+          {utmTerm && `adset: ${utmTerm}`}
+          {(utmContent || utmTerm) && placement && " · "}
+          {placement}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default async function LeadsPage() {
   const leads = await prisma.lead.findMany({
     orderBy: { submittedAt: "desc" },
-    // Pull the visitor number so each lead links back to its session row.
-    include: { session: { select: { visitorNumber: true } } },
+    include: {
+      session: {
+        select: {
+          // Links each lead back to its session row.
+          visitorNumber: true,
+          // Attribution: which ad or campaign actually produced this enquiry.
+          source: true,
+          medium: true,
+          campaign: true,
+          utmContent: true,
+          utmTerm: true,
+          placement: true,
+          rawParams: true,
+        },
+      },
+    },
   });
 
   const now = new Date();
@@ -47,6 +110,7 @@ export default async function LeadsPage() {
                   <Th>Email</Th>
                   <Th>Budget Range</Th>
                   <Th>Configuration</Th>
+                  <Th>Attribution</Th>
                   <Th>Submitted At</Th>
                   <Th>Session</Th>
                 </tr>
@@ -90,6 +154,12 @@ export default async function LeadsPage() {
                       ) : (
                         DASH
                       )}
+                    </Td>
+
+                    {/* Which ad produced this enquiry — the number the client
+                        actually asks about. */}
+                    <Td>
+                      <Attribution session={lead.session} />
                     </Td>
 
                     <Td className="text-white/50">

@@ -20,6 +20,7 @@
   var ENDPOINT = "/api/track";
   var VISITOR_KEY = "tr_visitor_id";
   var SESSION_KEY = "tr_session_id";
+  var SESSION_META_KEY = "tr_smeta";
   var FLUSH_MS = 5000;
   var HEARTBEAT_MS = 15000;
   var MAX_BATCH = 50;
@@ -97,15 +98,69 @@
 
   var params = new URLSearchParams(location.search);
 
-  function attribution() {
-    var source = params.get("utm_source");
-    var medium = params.get("utm_medium");
-    var campaign = params.get("utm_campaign");
+  /**
+   * Acquisition params, captured ONCE per session and cached in sessionStorage.
+   *
+   * Reading them on every pageview would be wrong: a visitor who lands on
+   * "/?utm_source=meta" and then clicks an internal link to a page with no
+   * query string would have their attribution overwritten with nulls.
+   */
+  function getOrCreateSessionEntryMeta() {
+    try {
+      var existing = tab && tab.getItem(SESSION_META_KEY);
+      if (existing) return JSON.parse(existing);
+    } catch {
+      /* corrupt or unreadable — fall through and capture fresh */
+    }
+
+    var raw = {};
+    params.forEach(function (value, key) {
+      // Cap key/value length so a hostile URL cannot bloat the row.
+      raw[key.slice(0, 100)] = String(value).slice(0, 500);
+    });
+
+    var meta = {
+      entryPath: location.pathname,
+      referrer: document.referrer || "",
+      utmSource: params.get("utm_source"),
+      utmMedium: params.get("utm_medium"),
+      utmCampaign: params.get("utm_campaign"),
+      utmContent: params.get("utm_content"),
+      utmTerm: params.get("utm_term"),
+      gclid: params.get("gclid"),
+      fbclid: params.get("fbclid"),
+      msclkid: params.get("msclkid"),
+      placement: params.get("placement"),
+      // Meta's dynamic URL parameters, filled in per click by Meta itself.
+      metaCampaignId: params.get("campaign_id"),
+      metaAdsetId: params.get("adset_id"),
+      metaAdId: params.get("ad_id"),
+      rawParams: raw,
+    };
+
+    try {
+      if (tab) tab.setItem(SESSION_META_KEY, JSON.stringify(meta));
+    } catch {
+      // Private browsing / quota — fail open, just don't persist.
+    }
+
+    return meta;
+  }
+
+  /**
+   * The derived, human-readable view shown in the admin's Source/Medium/Campaign
+   * columns. Derived from the *captured* meta, never from live `location.search`,
+   * so an internal navigation cannot blank it out.
+   */
+  function attribution(meta) {
+    var source = meta.utmSource;
+    var medium = meta.utmMedium;
+    var campaign = meta.utmCampaign;
 
     // Fall back to the referrer host when there are no UTM tags.
-    if (!source && document.referrer) {
+    if (!source && meta.referrer) {
       try {
-        var refHost = new URL(document.referrer).hostname;
+        var refHost = new URL(meta.referrer).hostname;
         if (refHost && refHost !== location.hostname) {
           source = refHost.replace(/^www\./, "");
           medium = medium || "referral";
@@ -115,9 +170,9 @@
       }
     }
 
-    // Meta and Google click ids imply paid traffic even without utm tags.
-    if (!source && (params.get("fbclid") || params.get("gclid"))) {
-      source = params.get("gclid") ? "google" : "facebook";
+    // Click ids imply paid traffic even when the ad carries no utm tags.
+    if (!source && (meta.gclid || meta.fbclid || meta.msclkid)) {
+      source = meta.gclid ? "google" : meta.msclkid ? "bing" : "facebook";
       medium = medium || "cpc";
     }
 
@@ -141,7 +196,8 @@
     return isPhone ? "mobile" : "desktop";
   }
 
-  var attr = attribution();
+  var entryMeta = getOrCreateSessionEntryMeta();
+  var attr = attribution(entryMeta);
   var sessionPayload = {
     kind: "session",
     clientId: clientId,
@@ -149,6 +205,7 @@
     isReturning: isReturning,
     device: deviceType(),
     path: location.pathname,
+    entryMeta: entryMeta,
   };
   if (attr.source) sessionPayload.source = attr.source;
   if (attr.medium) sessionPayload.medium = attr.medium;

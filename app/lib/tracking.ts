@@ -20,6 +20,42 @@ const pathString = z.string().trim().max(300).optional();
 
 export const INTERACTION_TYPES = ["click", "hover", "scroll", "pageview"] as const;
 
+/** A single acquisition tag. Nullable because the client sends explicit nulls. */
+const tag = z.string().trim().max(200).nullish();
+
+/**
+ * Acquisition params captured on the landing URL, once per session.
+ *
+ * The named fields are the ones we filter and group by in SQL; `rawParams` is
+ * the catch-all so a new ad platform or a custom param is never lost. Bounded
+ * on every axis — this arrives from an untrusted browser.
+ */
+export const entryMetaSchema = z.object({
+  entryPath: z.string().trim().max(300).nullish(),
+  referrer: z.string().trim().max(600).nullish(),
+  utmSource: tag,
+  utmMedium: tag,
+  utmCampaign: tag,
+  utmContent: tag,
+  utmTerm: tag,
+  gclid: tag,
+  fbclid: tag,
+  msclkid: tag,
+  placement: tag,
+  metaCampaignId: tag,
+  metaAdsetId: tag,
+  metaAdId: tag,
+  rawParams: z
+    .record(z.string().max(100), z.string().max(500))
+    // A landing URL with 50 distinct params is an attack, not a campaign.
+    .refine((value) => Object.keys(value).length <= 50, {
+      message: "too many params",
+    })
+    .optional(),
+});
+
+export type EntryMeta = z.infer<typeof entryMetaSchema>;
+
 export const sessionStartSchema = z.object({
   kind: z.literal("session"),
   clientId: idString,
@@ -30,6 +66,8 @@ export const sessionStartSchema = z.object({
   medium: shortString.optional(),
   campaign: shortString.optional(),
   path: pathString,
+  // Optional so an older cached tracker.js keeps working after deploy.
+  entryMeta: entryMetaSchema.optional(),
 });
 
 export const eventBatchSchema = z.object({
