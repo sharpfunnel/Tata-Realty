@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "../../lib/prisma";
 import { rateLimit } from "../../lib/rate-limit";
-import { ipFromHeaders, locationFromHeaders } from "../../lib/request";
+import {
+  browserFromHeaders,
+  geolocateIp,
+  ipFromHeaders,
+  locationFromHeaders,
+} from "../../lib/request";
 import { deriveBounced, trackPayloadSchema } from "../../lib/tracking";
 
 // Public endpoint: the landing page must reach it without a session.
@@ -38,8 +43,11 @@ export async function POST(request: Request) {
 
   try {
     if (payload.kind === "session") {
-      // IP and location are resolved here, never trusted from the client.
-      const location = locationFromHeaders(request.headers);
+      // IP and location are resolved here, never trusted from the client. Use
+      // the host's geo headers when present (Vercel), otherwise fall back to an
+      // IP lookup so location is captured on any host, not just Vercel.
+      const location =
+        locationFromHeaders(request.headers) ?? (await geolocateIp(ip));
 
       await prisma.session.upsert({
         where: { clientId: payload.clientId },
@@ -48,6 +56,7 @@ export async function POST(request: Request) {
           visitorId: payload.visitorId,
           isReturning: payload.isReturning,
           device: payload.device,
+          browser: browserFromHeaders(request.headers),
           ip,
           location,
           source: payload.source ?? null,

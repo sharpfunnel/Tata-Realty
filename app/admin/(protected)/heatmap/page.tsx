@@ -42,8 +42,6 @@ export default async function HeatmapPage({
     y: event.yPct as number,
   }));
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "/";
-
   return (
     <>
       <PageHeader
@@ -87,7 +85,7 @@ export default async function HeatmapPage({
             hint="tracker.js reports normalised coordinates for every click and hover pause. They will appear here as soon as the landing page gets traffic."
           />
         ) : (
-          <HeatmapCanvas points={points} siteUrl={siteUrl} mode={mode} />
+          <HeatmapCanvas points={points} mode={mode} />
         )}
       </Card>
     </>

@@ -1,17 +1,18 @@
 import Image from "next/image";
 
 import LeadForm from "./components/lead-form";
+import SessionRecorder from "./components/session-recorder";
 import { CONTACT, whatsappLink } from "./lib/site";
 
 const MAP_SRC =
   "https://www.google.com/maps?q=Reliance+Corporate+Park,+Ghansoli,+Navi+Mumbai&output=embed";
 
 const HERO_STATS = [
-  { value: "₹99 Lakhs*", label: "Starting price" },
+  { value: "₹1.99 Cr", label: "Starting price" },
   { value: "47.5 Acres", label: "Integrated development" },
   { value: "₹5,000+ Cr", label: "Total investment" },
   { value: "Ghansoli", label: "Navi Mumbai" },
-  { value: "Taj Hotel + IT Park", label: "In campus" },
+  { value: "Taj Hotel, Mall, School, IT Park", label: "In campus" },
 ];
 
 const WHY_CARDS = [
@@ -417,6 +418,8 @@ function ActionButton({
 export default function Home() {
   return (
     <>
+      {/* Full-page session recording — landing page only, never the admin */}
+      <SessionRecorder />
       {/* Identity strip - channel partner badge only, no navigation menu */}
       <header className="sticky top-0 z-40 border-b border-line/70 bg-cream/85 backdrop-blur">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-5 py-3 sm:px-8">

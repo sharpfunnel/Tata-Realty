@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { BUDGET_OPTIONS, CONFIG_OPTIONS, CONTACT, whatsappLink } from "../lib/site";
+import { BUDGET_OPTIONS, CONFIG_OPTIONS, CONTACT } from "../lib/site";
 
 declare global {
   interface Window {
@@ -70,9 +70,8 @@ export default function LeadForm({
     // Meta conversion event - Pixel ID still pending from client.
     window.fbq?.("track", "Lead");
 
-    // Persist to the admin panel. Fire-and-forget: the WhatsApp hand-off below
-    // must stay in the same synchronous tick or the browser blocks the popup,
-    // and a slow database must never delay the user's enquiry.
+    // Persist to the admin panel. Fire-and-forget so a slow database never
+    // delays the confirmation the user sees.
     void fetch("/api/lead", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -85,19 +84,9 @@ export default function LeadForm({
       }),
       keepalive: true,
     }).catch(() => {
-      // Never block the enquiry on an analytics failure.
+      // Never block the enquiry on a network failure.
     });
 
-    const lines = [
-      "Hi, I am interested in Tata Realty Ghansoli pre-launch. Please share details.",
-      "",
-      `Name: ${name}`,
-      `Phone: ${phone}`,
-      `Budget: ${budget}`,
-    ];
-    if (withConfiguration) lines.push(`Configuration: ${configuration}`);
-
-    window.open(whatsappLink(lines.join("\n")), "_blank", "noopener,noreferrer");
     setDone(true);
   }
 

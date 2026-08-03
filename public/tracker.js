@@ -124,12 +124,21 @@
     return { source: source, medium: medium, campaign: campaign };
   }
 
-  function isMobile() {
+  function deviceType() {
+    var ua = navigator.userAgent || "";
+    // iPadOS 13+ reports a desktop UA, so treat any multi-touch Mac as a tablet.
+    if (/iPad/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints > 1))
+      return "tablet";
+    // Android tablets omit the "Mobile" token that phones include.
+    if (/Android/i.test(ua) && !/Mobile/i.test(ua)) return "tablet";
+
     if (navigator.userAgentData && typeof navigator.userAgentData.mobile === "boolean") {
-      return navigator.userAgentData.mobile;
+      return navigator.userAgentData.mobile ? "mobile" : "desktop";
     }
-    return window.matchMedia("(max-width: 767px)").matches ||
-      /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+    var isPhone =
+      window.matchMedia("(max-width: 767px)").matches ||
+      /iPhone|iPod|Android.*Mobile|Mobile/i.test(ua);
+    return isPhone ? "mobile" : "desktop";
   }
 
   var attr = attribution();
@@ -138,7 +147,7 @@
     clientId: clientId,
     visitorId: visitorId,
     isReturning: isReturning,
-    device: isMobile() ? "mobile" : "desktop",
+    device: deviceType(),
     path: location.pathname,
   };
   if (attr.source) sessionPayload.source = attr.source;

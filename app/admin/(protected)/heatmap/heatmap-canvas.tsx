@@ -1,36 +1,35 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export type HeatPoint = { id: string; x: number; y: number };
 
-// The landing page is rendered at a fixed desktop width and scaled down to fit
-// the admin panel, so the overlay geometry is stable regardless of the admin
-// window size. Coordinates are stored normalised, so they map onto any width.
+// The backdrop is a full-page screenshot captured at this width; coordinates are
+// stored normalised (0-1), so they map onto the image at any displayed size.
 const DESIGN_WIDTH = 1440;
 
-// Used until the real document height can be measured.
-const FALLBACK_HEIGHT = 6000;
+// Screenshot's natural height at DESIGN_WIDTH, used until the image reports its
+// real dimensions on load. Keeps the overlay geometry correct from first paint.
+const FALLBACK_HEIGHT = 10232;
+
+const BACKDROP_SRC = "/heatmap-home.webp";
 
 export default function HeatmapCanvas({
   points,
-  siteUrl,
   mode,
 }: {
   points: HeatPoint[];
-  siteUrl: string;
   mode: "click" | "hover";
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const [containerWidth, setContainerWidth] = useState(DESIGN_WIDTH);
-  const [pageHeight, setPageHeight] = useState(FALLBACK_HEIGHT);
-  const [measured, setMeasured] = useState(false);
+  // Aspect ratio (height / width) of the backdrop, so the overlay always lines
+  // up with the page image regardless of the admin window size.
+  const [aspect, setAspect] = useState(FALLBACK_HEIGHT / DESIGN_WIDTH);
 
-  const scale = containerWidth / DESIGN_WIDTH;
-  const displayHeight = pageHeight * scale;
+  const displayHeight = containerWidth * aspect;
 
   // Track the admin container width so the preview scales responsively.
   useEffect(() => {
@@ -45,34 +44,6 @@ export default function HeatmapCanvas({
 
     return () => observer.disconnect();
   }, []);
-
-  // The admin and the landing page share an origin, so the iframe's document is
-  // readable and we can size the overlay to the real page height. If the site
-  // URL ever points elsewhere this throws, and we keep the fallback height.
-  const measurePage = useCallback(() => {
-    const doc = iframeRef.current?.contentDocument;
-    if (!doc?.body) return;
-
-    const height = Math.max(
-      doc.body.scrollHeight,
-      doc.documentElement.scrollHeight,
-    );
-    if (height > 0) {
-      setPageHeight(height);
-      setMeasured(true);
-    }
-  }, []);
-
-  const handleLoad = useCallback(() => {
-    try {
-      measurePage();
-      // Fonts and lazy images shift the height after load; re-measure shortly.
-      const timer = setTimeout(measurePage, 1200);
-      return () => clearTimeout(timer);
-    } catch {
-      // Cross-origin — keep the fallback height.
-    }
-  }, [measurePage]);
 
   // Paint the heat blobs.
   useEffect(() => {
@@ -123,10 +94,7 @@ export default function HeatmapCanvas({
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.07] px-4 py-2.5 text-xs text-white/40">
-        <span>
-          Landing page preview at {DESIGN_WIDTH}px wide
-          {measured ? "" : " · using estimated page height"}
-        </span>
+        <span>Landing page snapshot at {DESIGN_WIDTH}px wide</span>
         <span className="flex items-center gap-2">
           <span className="text-white/30">Low</span>
           <span
@@ -146,21 +114,18 @@ export default function HeatmapCanvas({
         className="relative w-full overflow-hidden bg-white"
         style={{ height: displayHeight }}
       >
-        <iframe
-          ref={iframeRef}
-          src={siteUrl}
-          title="Landing page preview"
-          onLoad={handleLoad}
-          // The preview is a backdrop, not an interactive page — swallow input
-          // so admins cannot accidentally navigate or submit the real form.
-          className="pointer-events-none absolute top-0 left-0 origin-top-left border-0"
-          style={{
-            width: DESIGN_WIDTH,
-            height: pageHeight,
-            transform: `scale(${scale})`,
+        {/* eslint-disable-next-line @next/next/no-img-element -- fixed backdrop
+            screenshot, not a responsive content image */}
+        <img
+          src={BACKDROP_SRC}
+          alt="Landing page snapshot"
+          onLoad={(e) => {
+            const img = e.currentTarget;
+            if (img.naturalWidth > 0) setAspect(img.naturalHeight / img.naturalWidth);
           }}
-          scrolling="no"
-          tabIndex={-1}
+          className="pointer-events-none absolute top-0 left-0 block select-none"
+          style={{ width: containerWidth, height: displayHeight }}
+          draggable={false}
         />
 
         <canvas

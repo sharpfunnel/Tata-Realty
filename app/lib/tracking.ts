@@ -25,7 +25,7 @@ export const sessionStartSchema = z.object({
   clientId: idString,
   visitorId: idString,
   isReturning: z.boolean(),
-  device: z.enum(["mobile", "desktop"]),
+  device: z.enum(["mobile", "tablet", "desktop"]),
   source: shortString.optional(),
   medium: shortString.optional(),
   campaign: shortString.optional(),
@@ -79,6 +79,25 @@ export const leadPayloadSchema = z.object({
 });
 
 export type LeadPayload = z.infer<typeof leadPayloadSchema>;
+
+/**
+ * A batch of rrweb DOM-recording events for full session replay. The events
+ * themselves are opaque rrweb objects, validated only for shape and count —
+ * their internal structure is rrweb's concern, not ours.
+ */
+export const replayPayloadSchema = z.object({
+  clientId: idString,
+  seq: z.number().int().min(0),
+  // Cap generously: the first batch carries rrweb's full DOM snapshot plus the
+  // burst of hydration mutations, which can be large. Rejecting it would lose
+  // the snapshot and leave an unplayable recording.
+  events: z
+    .array(z.object({ type: z.number(), timestamp: z.number() }).passthrough())
+    .min(1)
+    .max(5000),
+});
+
+export type ReplayPayload = z.infer<typeof replayPayloadSchema>;
 
 /**
  * Bounce is derived server-side rather than trusted from the client.

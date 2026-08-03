@@ -1,5 +1,6 @@
 import { formatDateTime, formatDuration, relativeTime } from "../../../lib/format";
 import { prisma } from "../../../lib/prisma";
+import { isPrivateIp } from "../../../lib/request";
 import {
   Badge,
   Card,
@@ -32,7 +33,7 @@ export default async function SessionsPage() {
   const sessions = await prisma.session.findMany({
     take: 100,
     orderBy: { arrivedAt: "desc" },
-    include: { lead: true },
+    include: { lead: true, _count: { select: { replayChunks: true } } },
   });
 
   // One `now` for the whole render so every relative timestamp agrees.
@@ -109,9 +110,15 @@ export default async function SessionsPage() {
                         {session.ip || DASH}
                       </Td>
 
-                      <Td>{session.location || DASH}</Td>
-                      <Td>{session.source || DASH}</Td>
-                      <Td>{session.medium || DASH}</Td>
+                      {/* Loopback/private IPs have no geo — show "Local" so a
+                          local test reads as such, not as a tracking failure. */}
+                      <Td>
+                        {session.location ??
+                          (session.ip && isPrivateIp(session.ip) ? "Local" : DASH)}
+                      </Td>
+                      {/* No UTM/referrer/click-id means the visit was direct. */}
+                      <Td>{session.source || "Direct"}</Td>
+                      <Td>{session.medium || (session.source ? DASH : "None")}</Td>
                       <Td>{session.campaign || DASH}</Td>
 
                       <Td className="font-mono text-xs">{duration ?? DASH}</Td>
@@ -152,11 +159,9 @@ export default async function SessionsPage() {
                       </Td>
 
                       <Td>
-                        {session.replayUrl ? (
+                        {session._count.replayChunks > 0 ? (
                           <a
-                            href={session.replayUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                            href={`/admin/sessions/${session.id}/replay`}
                             className="text-[#ff9d55] transition hover:text-[#ff7a1a] hover:underline"
                           >
                             ⊙ Watch

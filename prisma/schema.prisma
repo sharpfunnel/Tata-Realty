@@ -18,6 +18,8 @@ model Session {
   visitorNumber Int      @unique @default(autoincrement())
   arrivedAt     DateTime @default(now())
   device        String
+  /// Browser family (Chrome, Safari, …) derived server-side from the UA header.
+  browser       String?
   isReturning   Boolean  @default(false)
   ip            String?
   location      String?
@@ -42,6 +44,7 @@ model Session {
 
   events        PageEvent[]
   lead          Lead?
+  replayChunks  ReplayChunk[]
 
   @@index([arrivedAt])
   @@index([visitorId])
@@ -78,6 +81,24 @@ model PageEvent {
   timestamp DateTime @default(now())
 
   @@index([type])
+  @@index([sessionId])
+}
+
+/// A batch of rrweb DOM-recording events for full session replay. One row per
+/// flushed batch; the player concatenates them in `seq` order to reconstruct
+/// the visit. Stored as chunks because rrweb emits far too many events to keep
+/// one row each.
+model ReplayChunk {
+  id        String   @id @default(cuid())
+  sessionId String
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  /// Monotonic per-session index, assigned client-side, for stable ordering.
+  seq       Int
+  /// Array of rrweb events exactly as emitted on the client.
+  events    Json
+  createdAt DateTime @default(now())
+
+  @@unique([sessionId, seq])
   @@index([sessionId])
 }
 
