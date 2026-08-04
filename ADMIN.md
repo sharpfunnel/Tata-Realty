@@ -164,6 +164,63 @@ breaks the join. Both fields are indexed for that query.
   ad / adset / placement on a second line. `Direct` when the session carried no
   tags; `Unknown` when the lead has no session at all (blocked script or DNT).
 
+## Meta Conversions API
+
+Server-side conversion events, so conversions still reach Meta when the browser
+Pixel is blocked by an ad blocker, ITP, or a webview.
+
+Two paths write to the same `Lead` columns, so the Sent/Failed badge on
+`/admin/leads` always reflects whichever fired most recently:
+
+- **Automatic** — a `Lead` event fires when an enquiry is submitted.
+- **Manual** — the **Send** button on each row opens a modal where you pick the
+  event (Purchase, Lead, Subscribe, Registration, Start Trial, or a custom
+  name), optionally set a value + currency and an order/reference ID, review
+  the exact JSON payload, then send.
+
+### Setup
+
+1. Events Manager → Data Sources → your pixel → **Settings** → *Generate access
+   token*. Put it in `META_CAPI_ACCESS_TOKEN`.
+2. `META_PIXEL_ID` is already set to `1330281962604710`.
+3. Add both in Vercel → Settings → Environment Variables, then redeploy.
+
+To rehearse safely, set `META_TEST_EVENT_CODE` (Events Manager → **Test
+Events** tab). Events then appear only in that tab. **Clear it in production**
+or your real conversions will not be counted.
+
+### Deduplication
+
+The form generates one id, passes it to the browser Pixel as `eventID` and to
+the server as `eventId`, and it is stored on `Lead.metaEventId` and sent as the
+CAPI `event_id`. Meta collapses the two deliveries into one conversion. In the
+manual modal, the *Order / reference ID* field serves the same purpose.
+
+### Match quality
+
+Email, phone, first/last name, city and country are SHA-256 hashed after
+normalisation (Meta's rules: trimmed, lowercased, phone with country code, city
+stripped of spaces). Raw PII never leaves the server. IP and User-Agent are sent
+unhashed, as Meta requires — this is why `Session.userAgent` stores the full
+string rather than just the browser family. For paid Meta traffic the `fbc`
+click cookie is reconstructed from the stored `fbclid`, which materially lifts
+the match rate.
+
+> **The browser Pixel base code is not installed on the landing page.** There is
+> a `fbq("track", "Lead", …)` call in the form, but nothing defines `fbq`
+> (GTM would have to inject it), so it is currently a no-op. CAPI works
+> regardless — it is server-to-server. Install the Pixel only if you want
+> browser-side events too; the dedup plumbing is already in place for it.
+
+### Before credentials exist
+
+With no access token in **development**, a send skips the Graph call and returns
+a fake success (`preview: true`) purely so the UI can be reviewed. It does not
+touch the lead's real status. In **production** a missing token is a real
+failure and is recorded in `metaCapiError`, surfaced as the Failed badge's
+tooltip. Once a real token is set, the preview path stops being hit — no
+cleanup needed.
+
 ## Notes / limits
 
 - **Replay** is recorded with rrweb into `ReplayChunk` rows; the Sessions table

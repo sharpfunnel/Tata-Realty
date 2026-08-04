@@ -67,8 +67,13 @@ export default function LeadForm({
 
     setError(null);
 
-    // Meta conversion event - Pixel ID still pending from client.
-    window.fbq?.("track", "Lead");
+    // One id shared by the browser Pixel and the server-side Conversions API,
+    // so Meta counts this conversion once rather than twice.
+    const eventId =
+      window.crypto?.randomUUID?.().replace(/-/g, "") ??
+      `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 12)}`;
+
+    window.fbq?.("track", "Lead", {}, { eventID: eventId });
 
     // Persist to the admin panel. Fire-and-forget so a slow database never
     // delays the confirmation the user sees.
@@ -77,6 +82,7 @@ export default function LeadForm({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         clientId: window.__trSessionId,
+        eventId,
         name,
         phone,
         budgetRange: budget,

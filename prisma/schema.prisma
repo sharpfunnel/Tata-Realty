@@ -20,6 +20,9 @@ model Session {
   device        String
   /// Browser family (Chrome, Safari, …) derived server-side from the UA header.
   browser       String?
+  /// Raw User-Agent. Meta's Conversions API matches on client_user_agent
+  /// paired with client_ip_address, so the family name alone is not enough.
+  userAgent     String?
   isReturning   Boolean  @default(false)
   ip            String?
   location      String?
@@ -95,6 +98,17 @@ model Lead {
   submittedAt   DateTime @default(now())
   /// Full raw payload, kept as an audit trail if the form ever gains fields.
   raw           Json?
+
+  /// --- Meta Conversions API.
+  /// Written by BOTH the automatic send on lead creation and the manual send
+  /// from the admin, so the Sent/Failed badge reflects whichever fired last.
+  metaCapiSentAt    DateTime?
+  metaCapiError     String?
+  /// The event name last delivered ("Lead", "Purchase", a custom name…).
+  metaCapiEventName String?
+  /// Shared with the browser Pixel's event_id so Meta deduplicates the two
+  /// deliveries of the same conversion instead of counting it twice.
+  metaEventId       String?
 
   @@index([submittedAt])
 }

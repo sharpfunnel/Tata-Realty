@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "../../lib/prisma";
 import { rateLimit } from "../../lib/rate-limit";
 import { ipFromHeaders } from "../../lib/request";
+import { sendLeadConversionEvent } from "../../lib/meta/capi";
 import { leadPayloadSchema } from "../../lib/tracking";
 
 // Public endpoint — the landing page form posts here without a session.
@@ -33,7 +34,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const { clientId, ...lead } = parsed.data;
+  const { clientId, eventId, ...lead } = parsed.data;
 
   try {
     // Resolve the tracking session so the lead links back to its visit.
@@ -56,7 +57,7 @@ export async function POST(request: Request) {
       if (existing) sessionId = null;
     }
 
-    await prisma.lead.create({
+    const created = await prisma.lead.create({
       data: {
         name: lead.name,
         phone: lead.phone,
@@ -66,6 +67,24 @@ export async function POST(request: Request) {
         // Audit trail: keeps whatever the form sent, even fields added later.
         raw: { ...lead, ip, receivedAt: new Date().toISOString() },
         sessionId,
+        // Shared with the browser Pixel so Meta counts one conversion, not two.
+        metaEventId: eventId ?? null,
+      },
+      select: {
+        id: true,
+        name: true,
+        phone: true,
+        email: true,
+        submittedAt: true,
+        session: {
+          select: {
+            ip: true,
+            userAgent: true,
+            location: true,
+            fbclid: true,
+            arrivedAt: true,
+          },
+        },
       },
     });
 
@@ -74,6 +93,32 @@ export async function POST(request: Request) {
         where: { id: session.id },
         data: { formFilled: true, bounced: false },
       });
+    }
+
+    // Fire the Meta conversion event. Awaited so the serverless function is not
+    // torn down mid-request, but a failure only records an error on the lead —
+    // the enquiry itself is already saved and the visitor still gets a 201.
+    try {
+      const capi = await sendLeadConversionEvent(created, {
+        eventId: eventId ?? undefined,
+        eventSourceUrl: request.headers.get("referer") ?? undefined,
+      });
+
+      if (!("preview" in capi && capi.preview)) {
+        await prisma.lead.update({
+          where: { id: created.id },
+          data: capi.ok
+            ? {
+                metaCapiSentAt: new Date(),
+                metaCapiError: null,
+                metaCapiEventName: capi.eventName,
+                metaEventId: capi.eventId,
+              }
+            : { metaCapiError: capi.error.slice(0, 500) },
+        });
+      }
+    } catch (capiError) {
+      console.error("[lead] meta capi failed", capiError);
     }
 
     return NextResponse.json({ ok: true }, { status: 201 });

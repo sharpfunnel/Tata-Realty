@@ -10,6 +10,7 @@ import {
   Td,
   Th,
 } from "../ui";
+import SendCapiModal from "./send-capi-modal";
 
 type LeadSession = {
   source: string | null;
@@ -60,6 +61,38 @@ function Attribution({ session }: { session: LeadSession | null }) {
   );
 }
 
+/**
+ * Reflects whichever send fired most recently — the automatic one on lead
+ * creation or a manual one from the Send button.
+ */
+function CapiStatus({
+  sentAt,
+  error,
+  eventName,
+}: {
+  sentAt: Date | null;
+  error: string | null;
+  eventName: string | null;
+}) {
+  if (error) {
+    return (
+      <span title={error}>
+        <Badge tone="red">Failed</Badge>
+      </span>
+    );
+  }
+
+  if (sentAt) {
+    return (
+      <span title={`${eventName ?? "Event"} · ${formatDateTime(sentAt)}`}>
+        <Badge tone="green">Sent</Badge>
+      </span>
+    );
+  }
+
+  return <span className="text-xs text-white/25">Not sent</span>;
+}
+
 export default async function LeadsPage() {
   const leads = await prisma.lead.findMany({
     orderBy: { submittedAt: "desc" },
@@ -76,6 +109,9 @@ export default async function LeadsPage() {
           utmTerm: true,
           placement: true,
           rawParams: true,
+          // Context for the Meta CAPI modal.
+          location: true,
+          metaAdId: true,
         },
       },
     },
@@ -113,6 +149,7 @@ export default async function LeadsPage() {
                   <Th>Attribution</Th>
                   <Th>Submitted At</Th>
                   <Th>Session</Th>
+                  <Th>Meta CAPI</Th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/[0.05]">
@@ -179,6 +216,28 @@ export default async function LeadsPage() {
                       ) : (
                         DASH
                       )}
+                    </Td>
+
+                    <Td>
+                      <div className="flex items-center gap-2">
+                        <CapiStatus
+                          sentAt={lead.metaCapiSentAt}
+                          error={lead.metaCapiError}
+                          eventName={lead.metaCapiEventName}
+                        />
+                        <SendCapiModal
+                          lead={{
+                            id: lead.id,
+                            name: lead.name,
+                            phone: lead.phone,
+                            email: lead.email,
+                            visitorNumber: lead.session?.visitorNumber ?? null,
+                            location: lead.session?.location ?? null,
+                            metaAdId: lead.session?.metaAdId ?? null,
+                            placement: lead.session?.placement ?? null,
+                          }}
+                        />
+                      </div>
                     </Td>
                   </tr>
                 ))}

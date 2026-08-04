@@ -94,6 +94,9 @@ export async function POST(request: Request) {
           isReturning: payload.isReturning,
           device: payload.device,
           browser: browserFromHeaders(request.headers),
+          // Kept raw (not just the family name) because Meta's Conversions API
+          // matches on the full client_user_agent string.
+          userAgent: request.headers.get("user-agent")?.slice(0, 500) || null,
           ip,
           location,
           source: payload.source ?? null,
