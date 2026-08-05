@@ -196,10 +196,10 @@ depending on an inline success message.
   and contact links, just no optional form — there would be no row to attach
   answers to. The page is `noindex, follow`.
 
-**WhatsApp still opens automatically on submit.** It is launched synchronously
-inside the submit gesture, before the network call, or a popup blocker would
-reject it. The thank-you page repeats the WhatsApp and call links for anyone
-whose browser blocks it anyway.
+**Submitting no longer opens WhatsApp.** The form saves the lead and goes
+straight to `/thank-you`. WhatsApp and call links live on that page as buttons
+the visitor chooses to press, so nothing hijacks the tab or trips a popup
+blocker.
 
 **Trade-off worth knowing:** budget and configuration used to be required on
 the landing page, so every lead had them. They are now optional, so expect a

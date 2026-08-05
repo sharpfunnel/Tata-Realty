@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { whatsappLink } from "../lib/site";
 
 declare global {
   interface Window {
@@ -12,12 +11,15 @@ declare global {
   }
 }
 
-type Tone = "light" | "dark";
+type Tone = "light" | "dark" | "glass";
 
 type Props = {
   tone?: Tone;
   submitLabel: string;
   id?: string;
+  /** Optional title rendered inside the card — used by the hero placement. */
+  heading?: string;
+  subheading?: string;
 };
 
 const styles = {
@@ -38,6 +40,19 @@ const styles = {
     note: "text-white/55",
     error: "text-red-300",
   },
+  // Frosted panel for the hero, where the card sits over photography. Kept
+  // light-tinted rather than fully transparent: the render runs from bright sky
+  // to dark tower behind it, and only a light frost keeps the labels legible
+  // across both.
+  glass: {
+    frame:
+      "border-white/60 bg-white/55 backdrop-blur-xl shadow-[0_24px_70px_-24px_rgba(0,0,0,0.55)]",
+    label: "text-ink/70",
+    field:
+      "border-black/10 bg-white/70 text-ink placeholder:text-ink/40 focus:border-gold focus:bg-white focus:ring-gold/30",
+    note: "text-ink/70",
+    error: "text-red-700",
+  },
 } satisfies Record<Tone, Record<string, string>>;
 
 /**
@@ -45,7 +60,13 @@ const styles = {
  * collected afterwards on /thank-you, where they are optional — a shorter form
  * converts better, and the lead is captured either way.
  */
-export default function LeadForm({ tone = "light", submitLabel, id }: Props) {
+export default function LeadForm({
+  tone = "light",
+  submitLabel,
+  id,
+  heading,
+  subheading,
+}: Props) {
   const s = styles[tone];
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -73,22 +94,6 @@ export default function LeadForm({ tone = "light", submitLabel, id }: Props) {
       `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 12)}`;
 
     window.fbq?.("track", "Lead", {}, { eventID: eventId });
-
-    // Opened here, synchronously inside the submit gesture — a popup blocker
-    // would reject it after the await below. The thank-you page repeats the
-    // link for anyone whose browser blocks it anyway.
-    const whatsappTab = window.open(
-      whatsappLink(
-        [
-          "Hi, I am interested in Tata Realty Ghansoli pre-launch. Please share details.",
-          "",
-          `Name: ${name}`,
-          `Phone: ${phone}`,
-        ].join("\n"),
-      ),
-      "_blank",
-      "noopener,noreferrer",
-    );
 
     try {
       const response = await fetch("/api/lead", {
@@ -120,13 +125,7 @@ export default function LeadForm({ tone = "light", submitLabel, id }: Props) {
       );
     } catch {
       setPending(false);
-      // WhatsApp already carried the enquiry, so say so rather than implying
-      // the whole thing failed.
-      setError(
-        whatsappTab
-          ? "We could not save your details here, but your WhatsApp message went through."
-          : "Network error. Please try again, or call us directly.",
-      );
+      setError("Network error. Please try again, or call us directly.");
     }
   }
 
@@ -139,6 +138,19 @@ export default function LeadForm({ tone = "light", submitLabel, id }: Props) {
       noValidate
       className={`grid gap-4 rounded-3xl border p-6 sm:grid-cols-2 sm:p-8 ${s.frame}`}
     >
+      {heading && (
+        <div className="sm:col-span-2">
+          <p
+            className={`font-display text-lg font-semibold ${
+              tone === "dark" ? "text-white" : "text-black"
+            }`}
+          >
+            {heading}
+          </p>
+          {subheading && <p className={`mt-1 text-sm ${s.note}`}>{subheading}</p>}
+        </div>
+      )}
+
       <div className="sm:col-span-2">
         <label
           htmlFor={`${id}-name`}

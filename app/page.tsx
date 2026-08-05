@@ -451,35 +451,57 @@ export default function Home() {
            * so a max-w-xl column stays clear of it.
            */}
           <div className="lg:absolute lg:inset-0 lg:z-10 lg:flex lg:items-start">
-            <div className="mx-auto w-full max-w-7xl px-5 pt-10 pb-3 sm:px-8 lg:pt-[9%] lg:pb-0">
-              <div className="max-w-xl">
-                <SectionLabel>Pre-Launch · Tata Realty · Ghansoli, Navi Mumbai</SectionLabel>
-                <h1 className="font-display mt-5 text-3xl leading-[1.05] font-semibold text-black sm:mt-6 sm:text-5xl">
-                  Tata Realty&apos;s Most Prestigious Development in Navi Mumbai - Now
-                  Pre-Launching at Ghansoli
-                </h1>
-                <p className="mt-5 text-sm leading-relaxed text-black/75 sm:text-base lg:text-lg">
-                  Premium 2 &amp; 3 BHK residences within a 47.5-acre integrated campus - Taj
-                  Hotel, IT Park, and open green views in one address.
-                </p>
-                <p className="font-deva mt-3 text-sm text-black sm:text-base">
-                  एक बार का मौका - टाटा का प्रीमियम प्रोजेक्ट, नवी मुंबई में।
-                </p>
+            {/* The % is of the section's WIDTH, not its height — CSS resolves
+                percentage padding against the inline size either way. */}
+            <div className="mx-auto w-full max-w-7xl px-5 pt-10 pb-3 sm:px-8 lg:pt-[14%] lg:pb-0">
+              {/*
+               * From lg the copy and the enquiry card sit side by side over the
+               * render; below lg they stack, so the form still lands high on
+               * mobile without fighting the tower for space.
+               */}
+              <div className="lg:flex lg:items-center lg:gap-10 xl:gap-14">
+                <div className="max-w-xl lg:flex-1">
+                  <SectionLabel>Pre-Launch · Tata Realty · Ghansoli, Navi Mumbai</SectionLabel>
+                  <h1 className="font-display mt-5 text-3xl leading-[1.05] font-semibold text-black sm:mt-6 sm:text-5xl">
+                    Tata Realty&apos;s Most Prestigious Development in Navi Mumbai - Now
+                    Pre-Launching at Ghansoli
+                  </h1>
+                  <p className="mt-5 text-sm leading-relaxed text-black/75 sm:text-base lg:text-lg">
+                    Premium 2 &amp; 3 BHK residences within a 47.5-acre integrated campus - Taj
+                    Hotel, IT Park, and open green views in one address.
+                  </p>
+                  <p className="font-deva mt-3 text-sm text-black sm:text-base">
+                    एक बार का मौका - टाटा का प्रीमियम प्रोजेक्ट, नवी मुंबई में।
+                  </p>
 
-                <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-start">
-                  <ActionButton
-                    href="#lead-form"
-                    className="w-full justify-between sm:w-auto sm:justify-start"
-                  >
-                    Get Pre-Launch Price
-                  </ActionButton>
-                  <ActionButton
-                    href={CONTACT.phoneHref}
-                    icon="phone"
-                    className="w-full justify-between sm:w-auto sm:justify-start"
-                  >
-                    Call Us
-                  </ActionButton>
+                  <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-start">
+                    <ActionButton
+                      href="#lead-form"
+                      className="w-full justify-between sm:w-auto sm:justify-start"
+                    >
+                      Get Pre-Launch Price
+                    </ActionButton>
+                    <ActionButton
+                      href={CONTACT.phoneHref}
+                      icon="phone"
+                      className="w-full justify-between sm:w-auto sm:justify-start"
+                    >
+                      Call Us
+                    </ActionButton>
+                  </div>
+                </div>
+
+                {/* ml-auto pushes the card to the right edge of the same
+                    max-w-7xl container the header uses, so it lines up with the
+                    "Call Us" button above it. */}
+                <div className="mt-8 w-full lg:mt-0 lg:ml-auto lg:w-[536px] lg:shrink-0">
+                  <LeadForm
+                    id="hero-form"
+                    tone="glass"
+                    heading="Get Pre-Launch Price"
+                    subheading="Price list & floor plans, shared instantly."
+                    submitLabel="Get Pre-Launch Details"
+                  />
                 </div>
               </div>
             </div>
