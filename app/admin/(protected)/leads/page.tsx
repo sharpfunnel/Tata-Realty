@@ -146,6 +146,7 @@ export default async function LeadsPage() {
                   <Th>Email</Th>
                   <Th>Budget Range</Th>
                   <Th>Configuration</Th>
+                  <Th>Message</Th>
                   <Th>Attribution</Th>
                   <Th>Submitted At</Th>
                   <Th>Session</Th>
@@ -188,6 +189,20 @@ export default async function LeadsPage() {
                     <Td>
                       {lead.configuration ? (
                         <Badge tone="orange">{lead.configuration}</Badge>
+                      ) : (
+                        DASH
+                      )}
+                    </Td>
+
+                    {/* Only ever filled in on the thank-you page. Truncated —
+                        the full text is in the tooltip. */}
+                    <Td className="max-w-[14rem] truncate whitespace-normal">
+                      {lead.message ? (
+                        <span title={lead.message} className="cursor-help text-xs">
+                          {lead.message.length > 60
+                            ? `${lead.message.slice(0, 60)}…`
+                            : lead.message}
+                        </span>
                       ) : (
                         DASH
                       )}

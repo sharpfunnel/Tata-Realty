@@ -95,7 +95,12 @@ model Lead {
   email         String?
   budgetRange   String?
   configuration String?
+  /// Free-text note. Only ever collected on the thank-you page.
+  message       String?
   submittedAt   DateTime @default(now())
+  /// Set when the visitor adds optional details on the thank-you page, so the
+  /// sales team can tell an enriched lead from a bare name + phone.
+  enrichedAt    DateTime?
   /// Full raw payload, kept as an audit trail if the form ever gains fields.
   raw           Json?
 

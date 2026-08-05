@@ -866,7 +866,6 @@ export default function Home() {
               <LeadForm
                 id="main-form"
                 tone="light"
-                withConfiguration
                 submitLabel="Get Pre-Launch Details"
               />
             </div>

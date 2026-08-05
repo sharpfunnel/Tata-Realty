@@ -12,7 +12,7 @@ Analytics and lead capture for the Ghansoli landing page. Everything lives under
 | `/admin/heatmap`  | Click / hover overlay on a page screenshot  |
 
 Public, ungated (the landing page must reach them): `POST /api/track`,
-`POST /api/lead`.
+`POST /api/lead`, `PATCH /api/lead`.
 
 ---
 
@@ -164,6 +164,49 @@ breaks the join. Both fields are indexed for that query.
   ad / adset / placement on a second line. `Direct` when the session carried no
   tags; `Unknown` when the lead has no session at all (blocked script or DNT).
 
+## Lead capture: short form + thank-you page
+
+The landing page form asks for **name and phone only**. Everything else is
+optional and collected afterwards on `/thank-you`.
+
+```
+Landing form (name + phone)
+      │  POST /api/lead → creates the Lead, returns { leadId }
+      ▼
+/thank-you?leadId=…
+      │  optional form (email, budget, configuration, message)
+      │  PATCH /api/lead → { leadId, … }
+      ▼
+the SAME Lead row is enriched — never a second lead
+```
+
+Why: a two-field form converts better, the lead is captured even if the
+visitor never adds anything else, and `/thank-you` is a **stable URL** you can
+point Meta/Google Ads conversion tracking and GTM triggers at, instead of
+depending on an inline success message.
+
+- `PATCH` only writes fields that were actually filled in, so adding a budget
+  later never blanks an email given earlier. `Lead.enrichedAt` records when it
+  happened, so the sales team can tell an enriched lead from a bare one.
+- `leadId` is the row's own cuid — unguessable, and the only thing authorising
+  the update. Because it travels in a URL (and so can leak via history,
+  referrers or a shared link), enrichment is refused **24 hours** after
+  submission (`ENRICH_WINDOW_MS`).
+- A direct visit to `/thank-you` with no `leadId` still shows the confirmation
+  and contact links, just no optional form — there would be no row to attach
+  answers to. The page is `noindex, follow`.
+
+**WhatsApp still opens automatically on submit.** It is launched synchronously
+inside the submit gesture, before the network call, or a popup blocker would
+reject it. The thank-you page repeats the WhatsApp and call links for anyone
+whose browser blocks it anyway.
+
+**Trade-off worth knowing:** budget and configuration used to be required on
+the landing page, so every lead had them. They are now optional, so expect a
+lower fill rate on both in exchange for more leads overall. If the sales team
+would rather have the data than the volume, move either field back into
+`app/components/lead-form.tsx` and add it to `leadPayloadSchema`.
+
 ## Meta Conversions API
 
 Server-side conversion events, so conversions still reach Meta when the browser
@@ -195,6 +238,11 @@ The form generates one id, passes it to the browser Pixel as `eventID` and to
 the server as `eventId`, and it is stored on `Lead.metaEventId` and sent as the
 CAPI `event_id`. Meta collapses the two deliveries into one conversion. In the
 manual modal, the *Order / reference ID* field serves the same purpose.
+
+The automatic `Lead` event fires on the short form's `POST`, so it carries name
+and phone but not email — email only exists once someone enriches on the
+thank-you page. Enrichment does **not** re-send (that would double-count); it
+improves match quality for any later manual send instead.
 
 ### Match quality
 

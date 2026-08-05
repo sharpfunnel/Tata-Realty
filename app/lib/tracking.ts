@@ -122,6 +122,29 @@ export const leadPayloadSchema = z.object({
 export type LeadPayload = z.infer<typeof leadPayloadSchema>;
 
 /**
+ * Optional details added on the thank-you page, PATCHed onto the lead the
+ * short landing-page form already created.
+ */
+export const leadEnrichSchema = z.object({
+  // A cuid from the POST response — unguessable, so it doubles as the token
+  // that authorises the update.
+  leadId: z.string().trim().min(20).max(40).regex(/^[a-z0-9]+$/, "invalid id"),
+  email: z.string().trim().email().max(200).optional().or(z.literal("")),
+  budgetRange: shortString.optional().or(z.literal("")),
+  configuration: shortString.optional().or(z.literal("")),
+  message: z.string().trim().max(2000).optional().or(z.literal("")),
+});
+
+export type LeadEnrichPayload = z.infer<typeof leadEnrichSchema>;
+
+/**
+ * How long after submission a lead stays open to enrichment. The id travels in
+ * a URL, so it can leak through history, referrers or a shared link — this
+ * stops an old link being used to rewrite a lead indefinitely.
+ */
+export const ENRICH_WINDOW_MS = 24 * 60 * 60 * 1000;
+
+/**
  * A batch of rrweb DOM-recording events for full session replay. The events
  * themselves are opaque rrweb objects, validated only for shape and count —
  * their internal structure is rrweb's concern, not ours.
