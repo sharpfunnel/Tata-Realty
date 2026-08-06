@@ -2,6 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import {
+  isValidName,
+  isValidPhone,
+  sanitizeNameInput,
+  sanitizePhoneInput,
+} from "../lib/validation";
 
 declare global {
   interface Window {
@@ -78,11 +84,17 @@ export default function LeadForm({
 
     const data = new FormData(event.currentTarget);
     const name = String(data.get("name") ?? "").trim();
-    const phone = String(data.get("phone") ?? "").replace(/\D/g, "");
+    const rawPhone = String(data.get("phone") ?? "").trim();
 
-    if (!name) return setError("Please enter your full name.");
-    if (phone.length !== 10)
+    // The real client-side gate. The live filters and the native `pattern`
+    // below are polish; this is what stops a bad submit reaching the network.
+    if (!isValidName(name)) return setError("Please enter your full name.");
+    if (!isValidPhone(rawPhone))
       return setError("Please enter a valid 10-digit phone number.");
+
+    // Send digits only — the server, the WhatsApp link and Meta's phone
+    // hashing all expect a bare number.
+    const phone = rawPhone.replace(/\D/g, "");
 
     setError(null);
     setPending(true);
@@ -162,8 +174,15 @@ export default function LeadForm({
           id={`${id}-name`}
           name="name"
           type="text"
+          required
+          minLength={2}
           autoComplete="name"
           placeholder="Your name"
+          // Live filter: drop characters a name cannot contain as they type.
+          onChange={(event) => {
+            const sanitized = sanitizeNameInput(event.target.value);
+            if (sanitized !== event.target.value) event.target.value = sanitized;
+          }}
           className={fieldClass}
         />
       </div>
@@ -179,10 +198,19 @@ export default function LeadForm({
           id={`${id}-phone`}
           name="phone"
           type="tel"
-          inputMode="numeric"
-          maxLength={10}
+          required
+          // Any mix of separators, so long as exactly 10 digits are present.
+          pattern="(?=(?:\D*\d){10}\D*$)[0-9\s\-()]+"
+          title="Enter a valid 10-digit phone number"
+          inputMode="tel"
+          // 10 digits plus room for spaces, dashes or brackets.
+          maxLength={14}
           autoComplete="tel-national"
           placeholder="10-digit mobile number"
+          onChange={(event) => {
+            const sanitized = sanitizePhoneInput(event.target.value);
+            if (sanitized !== event.target.value) event.target.value = sanitized;
+          }}
           className={fieldClass}
         />
       </div>

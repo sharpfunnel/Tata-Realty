@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { BUDGET_OPTIONS, CONFIG_OPTIONS, CONTACT } from "../lib/site";
+import { isValidEmail } from "../lib/validation";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
@@ -32,6 +33,12 @@ export default function ThankYouOptionalForm({ leadId }: { leadId: string }) {
     // At least one field, or there is nothing to send.
     if (!email && !budgetRange && !configuration && !message) {
       return setError("Add at least one detail before saving.");
+    }
+
+    // Optional field: only validate the format once it has been filled in.
+    if (email && !isValidEmail(email)) {
+      setStatus("error");
+      return setError("Please enter a valid email address.");
     }
 
     setError(null);
