@@ -2,7 +2,11 @@ import { NextResponse } from "next/server";
 import { prisma } from "../../lib/prisma";
 import { rateLimit } from "../../lib/rate-limit";
 import { ipFromHeaders } from "../../lib/request";
-import { sendLeadConversionEvent } from "../../lib/meta/capi";
+import {
+  CAPI_LEAD_SELECT,
+  readMetaCookies,
+  sendLeadConversionEvent,
+} from "../../lib/meta/capi";
 import {
   ENRICH_WINDOW_MS,
   leadEnrichSchema,
@@ -40,6 +44,10 @@ export async function POST(request: Request) {
 
   const { clientId, eventId, ...lead } = parsed.data;
 
+  // _fbp / _fbc belong to the Pixel; reading them off this request is the only
+  // chance we get, and they are the largest single lever on match quality.
+  const metaCookies = readMetaCookies(request.headers.get("cookie"));
+
   try {
     // Resolve the tracking session so the lead links back to its visit.
     const session = clientId
@@ -74,28 +82,22 @@ export async function POST(request: Request) {
         // Shared with the browser Pixel so Meta counts one conversion, not two.
         metaEventId: eventId ?? null,
       },
-      select: {
-        id: true,
-        name: true,
-        phone: true,
-        email: true,
-        submittedAt: true,
-        session: {
-          select: {
-            ip: true,
-            userAgent: true,
-            location: true,
-            fbclid: true,
-            arrivedAt: true,
-          },
-        },
-      },
+      select: CAPI_LEAD_SELECT,
     });
 
     if (session) {
       await prisma.session.update({
         where: { id: session.id },
-        data: { formFilled: true, bounced: false },
+        data: {
+          formFilled: true,
+          bounced: false,
+          // Written here rather than by the tracker because the Pixel that
+          // sets these cookies has certainly loaded by submit time. Keeping
+          // them on the session is what lets a later manual re-send from
+          // /admin match as well as this automatic one does.
+          ...(metaCookies.fbp ? { fbp: metaCookies.fbp } : {}),
+          ...(metaCookies.fbc ? { fbc: metaCookies.fbc } : {}),
+        },
       });
     }
 
@@ -106,6 +108,8 @@ export async function POST(request: Request) {
       const capi = await sendLeadConversionEvent(created, {
         eventId: eventId ?? undefined,
         eventSourceUrl: request.headers.get("referer") ?? undefined,
+        // The row was selected before the cookies were written to it.
+        cookies: metaCookies,
       });
 
       if (!("preview" in capi && capi.preview)) {

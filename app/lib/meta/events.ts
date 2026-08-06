@@ -15,6 +15,9 @@ export const CAPI_EVENT_TYPES = [
 
 export type CapiEventType = (typeof CAPI_EVENT_TYPES)[number]["value"];
 
+/** Meta's own constraint on custom event names — letters, digits, underscore. */
+export const CUSTOM_EVENT_NAME_PATTERN = /^[A-Za-z0-9_]{1,50}$/;
+
 /** Literal tuple for `z.enum` — `.map()` alone would widen these to `string`. */
 export const CAPI_EVENT_VALUES = CAPI_EVENT_TYPES.map(
   (type) => type.value,
@@ -31,5 +34,22 @@ export type ManualCapiOptions = {
 };
 
 export type ManualCapiResult =
-  | { ok: true; eventId: string; eventName: string; preview: boolean }
+  | {
+      ok: true;
+      eventId: string;
+      eventName: string;
+      preview: boolean;
+      /** Straight from Meta's response — what makes a delivery findable in
+       *  Events Manager. Absent on the credential-less dev preview path. */
+      eventsReceived?: number;
+      fbtraceId?: string;
+    }
   | { ok: false; error: string };
+
+/**
+ * The exact JSON the server would POST, with the access token redacted, plus
+ * anything about it worth flagging before it is sent. Built by the same code
+ * that builds the live payload — a preview assembled separately is a preview
+ * that lies.
+ */
+export type CapiPreview = { json: string; warnings: string[] };

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Noto_Sans_Devanagari } from "next/font/google";
 import Script from "next/script";
+import MetaPixel from "./components/meta-pixel";
 import "./globals.css";
 
 const GTM_ID = "GTM-T6FD9C6L";
@@ -66,6 +67,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         {/* First-party analytics — feeds the /admin panel. Loaded after
             interaction so it never competes with the hero render. */}
         <Script src="/tracker.js" strategy="afterInteractive" />
+
+        {/* Meta Pixel — the browser half of the conversion tracking whose
+            server half lives in app/lib/meta/capi.ts. Skips /admin itself. */}
+        <MetaPixel />
       </body>
     </html>
   );

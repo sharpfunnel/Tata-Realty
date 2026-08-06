@@ -9,9 +9,10 @@ import {
   sanitizePhoneInput,
 } from "../lib/validation";
 
+import { trackPixelLead } from "../lib/meta/pixel";
+
 declare global {
   interface Window {
-    fbq?: (...args: unknown[]) => void;
     /** Set by public/tracker.js — links this submission to the visit. */
     __trSessionId?: string;
   }
@@ -105,8 +106,6 @@ export default function LeadForm({
       window.crypto?.randomUUID?.().replace(/-/g, "") ??
       `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 12)}`;
 
-    window.fbq?.("track", "Lead", {}, { eventID: eventId });
-
     try {
       const response = await fetch("/api/lead", {
         method: "POST",
@@ -130,6 +129,11 @@ export default function LeadForm({
           payload?.error ?? "Could not send your enquiry. Please try again.",
         );
       }
+
+      // Fired only once the lead is actually saved, and only with the id the
+      // server also used as its CAPI event_id — Meta collapses the browser and
+      // server deliveries into one conversion.
+      trackPixelLead(eventId);
 
       // The id lets the thank-you page add optional details to this same lead.
       router.push(

@@ -46,6 +46,13 @@ model Session {
   gclid          String?
   fbclid         String?
   msclkid        String?
+  /// Meta's own browser cookies, read from the request when an enquiry is
+  /// submitted (the Pixel writes them, so they only exist once it has loaded).
+  /// `_fbc` is preferred over the fbclid-derived value because it carries the
+  /// real click timestamp; `_fbp` has no other source at all. Both go to the
+  /// Conversions API unhashed and are the single biggest lever on match quality.
+  fbp            String?
+  fbc            String?
   /// Meta ad hierarchy, populated from Meta's dynamic URL parameters
   /// ({{campaign.id}}, {{adset.id}}, {{ad.id}}, {{placement}}).
   placement      String?

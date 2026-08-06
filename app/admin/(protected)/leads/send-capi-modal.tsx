@@ -2,8 +2,17 @@
 
 import { useEffect, useMemo, useState } from "react";
 // Import from events.ts, not capi.ts — the latter is server-only.
-import { CAPI_EVENT_TYPES, type CapiEventType } from "../../../lib/meta/events";
-import { sendManualCapiEvent } from "../../../lib/meta/actions";
+import {
+  CAPI_EVENT_TYPES,
+  CUSTOM_EVENT_NAME_PATTERN,
+  type CapiEventType,
+  type CapiPreview,
+} from "../../../lib/meta/events";
+import {
+  previewCapiEvent,
+  sendManualCapiEvent,
+  type SendCapiInput,
+} from "../../../lib/meta/actions";
 
 export type CapiLeadSummary = {
   id: string;
@@ -21,11 +30,6 @@ const field =
 
 const label =
   "mb-1.5 block text-[11px] font-medium tracking-wider text-white/45 uppercase";
-
-/** Mirrors the server's masking so the preview is honest about what is sent. */
-function maskedHash(value: string | null): string {
-  return value ? "sha256(…)" : "—";
-}
 
 export default function SendCapiModal({ lead }: { lead: CapiLeadSummary }) {
   const [open, setOpen] = useState(false);
@@ -59,10 +63,9 @@ function Modal({
 
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [sent, setSent] = useState<{ eventId: string; preview: boolean } | null>(
-    null,
-  );
+  const [sent, setSent] = useState<SentSummary | null>(null);
   const [copied, setCopied] = useState(false);
+  const [preview, setPreview] = useState<CapiPreview | null>(null);
 
   // Escape closes, matching every other dialog the admin will ever use.
   useEffect(() => {
@@ -76,58 +79,59 @@ function Modal({
   const eventName =
     eventType === "Custom" ? customEventName.trim() || "CustomEvent" : eventType;
 
-  // Live preview of what the server will build. Identifiers show as masked
-  // hashes because the real payload sends SHA-256, never the raw values.
-  const preview = useMemo(() => {
-    const numericValue = Number.parseFloat(value);
-    const custom: Record<string, unknown> = {};
-    if (Number.isFinite(numericValue)) {
-      custom.value = numericValue;
-      custom.currency = currency.toUpperCase();
-    }
-    if (orderId.trim()) custom.order_id = orderId.trim();
+  // Meta's own constraint. Checked here too so the operator sees why Send is
+  // disabled instead of a generic rejection after the round trip.
+  const customNameValid =
+    eventType !== "Custom" ||
+    CUSTOM_EVENT_NAME_PATTERN.test(customEventName.trim());
 
-    return JSON.stringify(
-      {
-        data: [
-          {
-            event_name: eventName,
-            event_time: "<sent at request time>",
-            event_id: orderId.trim() || "<generated uuid>",
-            action_source: "website",
-            user_data: {
-              em: maskedHash(lead.email),
-              ph: maskedHash(lead.phone),
-              fn: maskedHash(lead.name),
-              ct: maskedHash(lead.location),
-              client_ip_address: "<from session>",
-              client_user_agent: "<from session>",
-            },
-            ...(Object.keys(custom).length ? { custom_data: custom } : {}),
-          },
-        ],
-      },
-      null,
-      2,
-    );
-  }, [eventName, value, currency, orderId, lead]);
+  // The options the server will build from — only choices, never identity.
+  const options = useMemo<SendCapiInput>(() => {
+    const numericValue = Number.parseFloat(value);
+    const hasValue = Number.isFinite(numericValue);
+    return {
+      eventType,
+      customEventName: eventType === "Custom" ? customEventName.trim() : undefined,
+      value: hasValue ? numericValue : undefined,
+      currency: hasValue ? currency.toUpperCase() : undefined,
+      orderId: orderId.trim() || undefined,
+    };
+  }, [eventType, customEventName, value, currency, orderId]);
+
+  // The preview is rendered by the *same* builder the live send uses, so it
+  // cannot drift away from what actually reaches Meta. Debounced because it is
+  // a round trip on every keystroke otherwise.
+  useEffect(() => {
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      const result = await previewCapiEvent(lead.id, options);
+      if (cancelled) return;
+      setPreview(result.ok ? result.preview : null);
+    }, 350);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [lead.id, options]);
 
   async function handleSend() {
     setPending(true);
     setError(null);
 
-    const numericValue = Number.parseFloat(value);
-    const result = await sendManualCapiEvent(lead.id, {
-      eventType,
-      customEventName: eventType === "Custom" ? customEventName.trim() : undefined,
-      value: Number.isFinite(numericValue) ? numericValue : undefined,
-      currency: Number.isFinite(numericValue) ? currency.toUpperCase() : undefined,
-      orderId: orderId.trim() || undefined,
-    });
+    const result = await sendManualCapiEvent(lead.id, options);
 
     setPending(false);
-    if (result.ok) setSent({ eventId: result.eventId, preview: result.preview });
-    else setError(result.error);
+    if (result.ok) {
+      setSent({
+        eventId: result.eventId,
+        preview: result.preview,
+        eventsReceived: result.eventsReceived,
+        fbtraceId: result.fbtraceId,
+      });
+    } else {
+      setError(result.error);
+    }
   }
 
   const needsValue = CAPI_EVENT_TYPES.find(
@@ -200,8 +204,14 @@ function Modal({
                   value={customEventName}
                   onChange={(event) => setCustomEventName(event.target.value)}
                   placeholder="SiteVisitBooked"
+                  aria-invalid={!customNameValid}
                   className={field}
                 />
+                {!customNameValid && (
+                  <p className="mt-1.5 text-xs text-amber-300/80">
+                    Letters, digits and underscores only, up to 50 characters.
+                  </p>
+                )}
               </div>
             )}
 
@@ -251,7 +261,18 @@ function Modal({
               />
             </div>
 
-            <details className="mt-5 rounded-lg border border-white/[0.07] bg-white/[0.02]">
+            {preview && preview.warnings.length > 0 && (
+              <ul className="mt-5 space-y-1 rounded-lg border border-amber-400/25 bg-amber-400/[0.07] px-3 py-2 text-xs text-amber-200/90">
+                {preview.warnings.map((warning) => (
+                  <li key={warning} className="flex gap-2">
+                    <span aria-hidden="true">·</span>
+                    <span>{warning}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <details className="mt-3 rounded-lg border border-white/[0.07] bg-white/[0.02]">
               <summary className="cursor-pointer list-none px-3 py-2 text-xs font-medium text-white/50 transition hover:text-white/80">
                 Payload preview
               </summary>
@@ -259,7 +280,8 @@ function Modal({
                 <button
                   type="button"
                   onClick={() => {
-                    navigator.clipboard?.writeText(preview);
+                    if (!preview) return;
+                    navigator.clipboard?.writeText(preview.json);
                     setCopied(true);
                     setTimeout(() => setCopied(false), 1500);
                   }}
@@ -268,7 +290,7 @@ function Modal({
                   {copied ? "Copied" : "Copy"}
                 </button>
                 <pre className="max-h-64 overflow-auto p-3 text-[11px] leading-relaxed text-white/55">
-                  {preview}
+                  {preview?.json ?? "Building preview…"}
                 </pre>
               </div>
             </details>
@@ -293,7 +315,7 @@ function Modal({
               <button
                 type="button"
                 onClick={handleSend}
-                disabled={pending}
+                disabled={pending || !customNameValid}
                 className="rounded-lg bg-[#ff7a1a] px-4 py-2 text-sm font-semibold text-black transition hover:bg-[#ff8c3a] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {pending ? "Sending…" : `Send ${eventName}`}
@@ -328,12 +350,19 @@ function LeadContext({ lead }: { lead: CapiLeadSummary }) {
   );
 }
 
+type SentSummary = {
+  eventId: string;
+  preview: boolean;
+  eventsReceived?: number;
+  fbtraceId?: string;
+};
+
 function SuccessPanel({
   sent,
   eventName,
   onClose,
 }: {
-  sent: { eventId: string; preview: boolean };
+  sent: SentSummary;
   eventName: string;
   onClose: () => void;
 }) {
@@ -358,12 +387,29 @@ function SuccessPanel({
           delivered and the lead&apos;s status was left unchanged.
         </p>
       ) : (
-        <p className="mt-1.5 text-xs text-white/40">Meta accepted the event.</p>
+        <p className="mt-1.5 text-xs text-white/40">
+          Meta accepted{" "}
+          {sent.eventsReceived === undefined
+            ? "the event"
+            : `${sent.eventsReceived} event${sent.eventsReceived === 1 ? "" : "s"}`}
+          .
+        </p>
       )}
 
-      <p className="mt-3 font-mono text-[11px] break-all text-white/45">
-        {sent.eventId}
-      </p>
+      {/* event_id finds the conversion in the dataset; fbtrace_id is what Meta
+          support and Events Manager can look this delivery up by. */}
+      <dl className="mx-auto mt-3 max-w-sm space-y-1 text-left font-mono text-[11px] break-all text-white/45">
+        <div>
+          <dt className="inline text-white/30">event_id </dt>
+          <dd className="inline">{sent.eventId}</dd>
+        </div>
+        {sent.fbtraceId && (
+          <div>
+            <dt className="inline text-white/30">fbtrace_id </dt>
+            <dd className="inline">{sent.fbtraceId}</dd>
+          </div>
+        )}
+      </dl>
 
       <button
         type="button"

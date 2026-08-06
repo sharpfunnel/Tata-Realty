@@ -207,10 +207,30 @@ lower fill rate on both in exchange for more leads overall. If the sales team
 would rather have the data than the volume, move either field back into
 `app/components/lead-form.tsx` and add it to `leadPayloadSchema`.
 
-## Meta Conversions API
+## Meta Pixel + Conversions API
 
-Server-side conversion events, so conversions still reach Meta when the browser
-Pixel is blocked by an ad blocker, ITP, or a webview.
+Conversions reach Meta twice over: from the browser Pixel, and server-to-server
+via the Conversions API so they still arrive when the Pixel is blocked by an ad
+blocker, ITP, or a webview. The two are deduplicated (see below), so Meta counts
+one conversion per lead, not two.
+
+### Browser Pixel
+
+`app/components/meta-pixel.tsx`, mounted once in `app/layout.tsx`. It fires
+`PageView` on load and again on every client-side navigation, and `Lead` from
+the enquiry form once the lead is saved. It renders nothing at all on `/admin`
+(our own traffic must not enter the ad data) or when
+`NEXT_PUBLIC_META_PIXEL_ID` is unset.
+
+> **This site also loads a GTM container** (`GTM-T6FD9C6L`). If anyone adds a
+> Meta tag inside it, that is a *second* pixel on the same page and the usual
+> cause of double-counted conversions. Every call we make is
+> `fbq("trackSingle", <our id>, …)` — never `fbq("track", …)`, which broadcasts
+> to every initialised pixel and would file our conversions under whichever
+> dataset GTM brought along. Audit the container for Meta tags before trusting
+> the numbers.
+
+### Conversions API
 
 Two paths write to the same `Lead` columns, so the Sent/Failed badge on
 `/admin/leads` always reflects whichever fired most recently:
@@ -219,14 +239,24 @@ Two paths write to the same `Lead` columns, so the Sent/Failed badge on
 - **Manual** — the **Send** button on each row opens a modal where you pick the
   event (Purchase, Lead, Subscribe, Registration, Start Trial, or a custom
   name), optionally set a value + currency and an order/reference ID, review
-  the exact JSON payload, then send.
+  the exact JSON payload, then send. The preview is built by the same code as
+  the live send with the token replaced by `<ACCESS_TOKEN>`, and it lists any
+  warnings — no identifiers, no `fbc`/`fbp`, a phone with no country code, a
+  `Purchase` with no value, a test event code still set. On success the modal
+  shows Meta's `fbtrace_id`, which is what makes the delivery findable in
+  Events Manager. A manual send always uses **now** as `event_time`; Meta
+  rejects anything older than 7 days.
 
 ### Setup
 
 1. Events Manager → Data Sources → your pixel → **Settings** → *Generate access
    token*. Put it in `META_CAPI_ACCESS_TOKEN`.
 2. `META_PIXEL_ID` is already set to `1330281962604710`.
-3. Add both in Vercel → Settings → Environment Variables, then redeploy.
+3. `NEXT_PUBLIC_META_PIXEL_ID` takes the **same value** — the server var must
+   not be public (it sits beside the token) and the browser cannot read a
+   non-public one. Set both or half the integration silently does nothing.
+4. Add all three in Vercel → Settings → Environment Variables, then redeploy.
+   `NEXT_PUBLIC_*` is inlined at build time, so a restart is not enough.
 
 To rehearse safely, set `META_TEST_EVENT_CODE` (Events Manager → **Test
 Events** tab). Events then appear only in that tab. **Clear it in production**
@@ -250,15 +280,17 @@ Email, phone, first/last name, city and country are SHA-256 hashed after
 normalisation (Meta's rules: trimmed, lowercased, phone with country code, city
 stripped of spaces). Raw PII never leaves the server. IP and User-Agent are sent
 unhashed, as Meta requires — this is why `Session.userAgent` stores the full
-string rather than just the browser family. For paid Meta traffic the `fbc`
-click cookie is reconstructed from the stored `fbclid`, which materially lifts
-the match rate.
+string rather than just the browser family.
 
-> **The browser Pixel base code is not installed on the landing page.** There is
-> a `fbq("track", "Lead", …)` call in the form, but nothing defines `fbq`
-> (GTM would have to inject it), so it is currently a no-op. CAPI works
-> regardless — it is server-to-server. Install the Pixel only if you want
-> browser-side events too; the dedup plumbing is already in place for it.
+The Pixel's own `_fbp` and `_fbc` cookies are read off the enquiry request in
+`/api/lead` and stored on `Session.fbp` / `Session.fbc`, so a later manual
+re-send matches as well as the automatic one did. They are the single biggest
+lever on match quality. When `_fbc` is missing — an older lead, or a browser
+that blocked the Pixel — `fbc` is reconstructed from the stored `fbclid` with
+the session's arrival time standing in for the click timestamp.
+
+After a day of real traffic, check Event Match Quality on the `Lead` event in
+Events Manager. Below about 6 means the identifiers reaching Meta are too thin.
 
 ### Before credentials exist
 
