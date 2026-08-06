@@ -64,6 +64,23 @@ model Session {
   /// Null (not `{}`) for direct traffic, so empty rows cost nothing.
   rawParams      Json?
 
+  /// --- Environment. Captured once at session start, straight from the
+  /// browser: what this visitor actually browses on. `device` and `browser`
+  /// above are the coarse buckets the tables group by; these are the detail
+  /// the Tech Stack page reads. All nullable — an older cached tracker.js
+  /// keeps posting sessions without them.
+  os             String?
+  browserVersion String?
+  screenWidth    Int?
+  screenHeight   Int?
+  viewportWidth  Int?
+  viewportHeight Int?
+  language       String?
+  timezone       String?
+  /// Network Information API `effectiveType` (4g/3g/2g/slow-2g). Chrome-only —
+  /// Safari and Firefox do not implement it, so expect this to be mostly null.
+  connection     String?
+
   durationSec   Int?
   bounced       Boolean  @default(false)
   /// Max scroll percentage reached, 0-100.
@@ -83,6 +100,11 @@ model Session {
   events        PageEvent[]
   lead          Lead?
   replayChunks  ReplayChunk[]
+  ctaEvents     CtaEvent[]
+  formEvents    FormEvent[]
+  mouseSignals  MouseInteraction[]
+  metrics       PerformanceMetric[]
+  errors        ErrorEvent[]
 
   @@index([arrivedAt])
   @@index([visitorId])
@@ -105,6 +127,12 @@ model Lead {
   /// Free-text note. Only ever collected on the thank-you page.
   message       String?
   submittedAt   DateTime @default(now())
+  /// Sales pipeline stage: new | contacted | qualified | won | lost.
+  /// A String, not an enum: the stages are a sales convention that will change
+  /// without a migration, and the app validates them on write.
+  status        String   @default("new")
+  /// When the stage last changed, so "sitting in new for 3 days" is visible.
+  statusAt      DateTime?
   /// Set when the visitor adds optional details on the thank-you page, so the
   /// sales team can tell an enriched lead from a bare name + phone.
   enrichedAt    DateTime?
@@ -123,6 +151,7 @@ model Lead {
   metaEventId       String?
 
   @@index([submittedAt])
+  @@index([status])
 }
 
 /// Individual interaction beacon. Click/hover rows carry the heatmap coordinates.
@@ -139,6 +168,110 @@ model PageEvent {
   timestamp DateTime @default(now())
 
   @@index([type])
+  @@index([sessionId])
+}
+
+/// A call-to-action impression, hover or click.
+///
+/// Keyed by the `data-cta-id` attribute in the markup, which is the whole
+/// convention: tagging a new button `data-cta-id="hero-call"` tracks it with
+/// no JavaScript change at all.
+model CtaEvent {
+  id        String   @id @default(cuid())
+  sessionId String
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  ctaId     String
+  /// viewed | hover | click
+  type      String
+  /// Visible text at the time of the event — so a renamed button is still
+  /// recognisable in the admin months later.
+  label     String?
+  path      String?
+  timestamp DateTime @default(now())
+
+  /// The CTAs table groups by id and type together.
+  @@index([ctaId, type])
+  @@index([sessionId])
+}
+
+/// A step in a form's lifecycle, keyed by `data-form-id`.
+///
+/// The funnel between these types is the point: viewed → started → submitted
+/// says where enquiries are lost, which a submission count alone cannot.
+model FormEvent {
+  id        String   @id @default(cuid())
+  sessionId String
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  formId    String
+  /// viewed | started | field_focus | field_complete | validation_error |
+  /// abandoned | submitted
+  type      String
+  /// Which input, for the field-level types. Names only — never values.
+  field     String?
+  path      String?
+  timestamp DateTime @default(now())
+
+  @@index([formId, type])
+  @@index([sessionId])
+}
+
+/// Frustration signals, derived client-side from click patterns.
+///
+/// Deliberately not called MouseEvent: that is a DOM lib type, and a Prisma
+/// model of the same name would shadow it in every file that imports the
+/// generated client.
+model MouseInteraction {
+  id        String   @id @default(cuid())
+  sessionId String
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  /// rage_click | dead_click | double_click
+  type      String
+  /// CSS selector of the element hit, so hotspots can be ranked by element.
+  selector  String?
+  /// Its visible text, truncated — a selector alone is hard to place on a page.
+  label     String?
+  path      String?
+  timestamp DateTime @default(now())
+
+  @@index([type])
+  @@index([sessionId])
+}
+
+/// One Core Web Vital sample. Rated with Google's own thresholds at capture
+/// time so the admin never has to re-derive them.
+model PerformanceMetric {
+  id        String   @id @default(cuid())
+  sessionId String
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  /// LCP | INP | CLS | FCP | TTFB
+  name      String
+  /// Milliseconds for every metric except CLS, which is unitless.
+  value     Float
+  /// good | needs-improvement | poor
+  rating    String
+  path      String?
+  timestamp DateTime @default(now())
+
+  @@index([name, rating])
+  @@index([sessionId])
+}
+
+/// A client-side error: thrown exception, unhandled rejection, or an <img>
+/// that failed to load. What makes "it works on my machine" checkable.
+model ErrorEvent {
+  id        String   @id @default(cuid())
+  sessionId String
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  /// js | promise | resource
+  kind      String
+  message   String
+  /// File or asset URL, and the line within it when the browser reports one.
+  source    String?
+  line      Int?
+  path      String?
+  timestamp DateTime @default(now())
+
+  @@index([timestamp])
   @@index([sessionId])
 }
 

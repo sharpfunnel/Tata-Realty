@@ -107,12 +107,59 @@ always built against the current schema.
 | **IP, Location** | **Server-side only**, from request headers — never sent by the client |
 | Scroll depth | Max % reached, rAF-throttled, flushed on heartbeat and page hide |
 | Clicks / hovers | Normalised `xPct`/`yPct` (0-1) against the full document |
+| Environment | Screen + viewport size, language, timezone, OS, browser version, connection quality |
+| CTA events | Every `[data-cta-id]` element: seen, hovered, clicked |
+| Form events | Every `[data-form-id]` form: seen, started, per-field, validation error, abandoned, submitted |
+| Frustration | Rage clicks, dead clicks, double clicks |
+| Web Vitals | LCP, INP, CLS, FCP, TTFB, rated with Google's thresholds |
+| Errors | Thrown exceptions, unhandled rejections, failed asset loads |
+| **IP, Location** | **Server-side only**, from request headers — never sent by the client |
 | **Duration** | **Server-side**: `now − arrivedAt` on each heartbeat |
 | **Bounce** | **Server-side**: ≤1 interaction *and* <10s *and* <25% scroll, and no form submission |
 
 Hover events fire only after the pointer rests for 450ms, so ordinary mouse
 sweeps do not flood the heatmap. Tracking is skipped entirely when Do Not Track
 is on, and on `/admin` itself.
+
+Everything above leaves in **one batch**, flushed after 5 seconds, 20 events, or
+on tab hide (`sendBeacon`, which survives unload where `fetch` does not). One
+request carries every kind at once — resist the urge to give an event type its
+own endpoint.
+
+### Tracking a new button or form
+
+This is a markup change, not a code change, and it is the highest-leverage idea
+in the whole system:
+
+```html
+<a href="#lead-form" data-cta-id="hero-price">Get Pre-Launch Price</a>
+<form data-form-id="enquiry">…</form>
+```
+
+That is the entire integration. The element appears in `/admin/ctas` or
+`/admin/forms` from the next deploy, with impressions, hovers, clicks or the
+full form funnel, and no JavaScript written anywhere.
+
+Forms that validate by hand — the enquiry form sets `noValidate` and renders its
+own messages — have no native `invalid` event for the tracker to hear, so they
+report their own: `window.__tr?.formError("enquiry", "phone")`. Without that, a
+rejected submission looks like a silent drop between *started* and *submitted*.
+
+### What the frustration signals mean
+
+- **Rage click** — 3+ clicks on the same element inside a second. Reported once
+  per burst.
+- **Dead click** — a click on something inert that changed nothing: a
+  `MutationObserver` watches for 600ms and reports only if the DOM never moved.
+  Deduped per element for 2 seconds, so one jabbed heading is one signal.
+- **Double click** — as it sounds; usually a link someone expected to be a
+  button.
+
+Web Vitals are measured straight off `PerformanceObserver` rather than the
+`web-vitals` package: `tracker.js` is served as a static file, not bundled, so
+it cannot import one. LCP, CLS and INP are only final once the visit ends, so
+they are held back and sent with the closing beacon. INP is approximated by the
+worst single interaction rather than the true 98th percentile.
 
 Location comes from Vercel's `x-vercel-ip-city` / `x-vercel-ip-country` edge
 headers — free, no third-party geo-IP call. Locally those headers are absent, so
@@ -163,6 +210,49 @@ breaks the join. Both fields are indexed for that query.
 - **Leads** — an `Attribution` column per lead: `source/medium · campaign`, with
   ad / adset / placement on a second line. `Direct` when the session carried no
   tags; `Unknown` when the lead has no session at all (blocked script or DNT).
+
+## The pages
+
+Every page is a Server Component that awaits its queries directly — no
+client-side fetching, no loading spinners, and `force-dynamic` on the route
+group's layout so a dashboard is never served stale. The one auth check at the
+top of `app/admin/(protected)/layout.tsx` protects all of them; anything placed
+outside that route group would be unprotected.
+
+| Route | What it answers |
+| --- | --- |
+| `/admin/overview` | The daily check: visitors, sessions, leads, conversion, trends, live visitors, device/browser/city/page breakdowns |
+| `/admin/sessions` | Every visit with its full technical and behavioural context, plus replay |
+| `/admin/leads` | The CRM: every enquiry, filterable by pipeline stage, status changeable inline, Meta CAPI send |
+| `/admin/funnels` | Page View → Scroll 25% → CTA Click → Form Start → Lead, all traffic or Meta-attributed only |
+| `/admin/ctas` | Per-CTA impressions, hovers, clicks, CTR and hover→click rate |
+| `/admin/forms` | Per-form seen / started / submitted / abandoned, plus which fields fail validation |
+| `/admin/heatmap` | Click and hover density over an iframe of the live page |
+| `/admin/tech-stack` | What visitors browse on — and bounce + conversion **per browser** and **per OS**, which is the "is Safari secretly broken" question |
+| `/admin/performance` | Core Web Vitals from real visits, p75 and the good/needs-work/poor split |
+| `/admin/errors` | The last 100 client-side failures, which never reach a server log |
+
+Counting rule worth knowing: Funnels and Forms count **sessions**, not events.
+One visitor who focuses four fields started one form, and one who clicks a CTA
+eight times reached the CTA stage once.
+
+Every chart is hand-rolled SVG in `app/admin/(protected)/charts.tsx` — no
+charting library. At dashboard scale (a few dozen points, server-rendered,
+static) a dependency would not earn its weight. Add to that file rather than
+building a one-off chart inside a page.
+
+### Lead pipeline
+
+`Lead.status` moves through **new → contacted → qualified → won / lost** from
+the dropdown in the Leads table. It is a `String`, not a database enum: the
+stages are a sales convention that will change, and the server action validates
+them on write. `statusAt` records when the stage last moved, so "sitting in new
+for three days" is visible. The tabs above the table filter by stage and carry
+their own counts.
+
+The control is optimistic — it repaints immediately and rolls back if the write
+fails — because the sales team works this list at speed and a round trip per row
+reads as a broken page.
 
 ## Lead capture: short form + thank-you page
 

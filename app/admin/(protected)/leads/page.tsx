@@ -1,4 +1,5 @@
 import { formatDateTime, relativeTime } from "../../../lib/format";
+import { LEAD_STATUSES, statusOf, type LeadStatus } from "../../../lib/leads";
 import { prisma } from "../../../lib/prisma";
 import {
   Badge,
@@ -11,6 +12,7 @@ import {
   Th,
 } from "../ui";
 import SendCapiModal from "./send-capi-modal";
+import StatusSelect from "./status-select";
 
 type LeadSession = {
   source: string | null;
@@ -93,10 +95,64 @@ function CapiStatus({
   return <span className="text-xs text-white/25">Not sent</span>;
 }
 
-export default async function LeadsPage() {
-  const leads = await prisma.lead.findMany({
-    orderBy: { submittedAt: "desc" },
-    include: {
+/** Pipeline filter tabs, each carrying its own count. */
+function StatusTabs({
+  active,
+  counts,
+  total,
+}: {
+  active: LeadStatus | null;
+  counts: Record<string, number | undefined>;
+  total: number;
+}) {
+  const tabs = [
+    { value: null, label: "All", count: total },
+    ...LEAD_STATUSES.map((status) => ({
+      value: status.value as LeadStatus | null,
+      label: status.label,
+      count: counts[status.value] ?? 0,
+    })),
+  ];
+
+  return (
+    <div className="flex flex-wrap gap-1">
+      {tabs.map((tab) => {
+        const selected = active === tab.value;
+        return (
+          <a
+            key={tab.label}
+            href={tab.value ? `/admin/leads?status=${tab.value}` : "/admin/leads"}
+            aria-current={selected ? "page" : undefined}
+            className={`rounded-lg px-2.5 py-1 text-xs font-medium transition ${
+              selected
+                ? "bg-[#ff7a1a]/12 text-[#ff9d55]"
+                : "text-white/45 hover:bg-white/[0.04] hover:text-white/80"
+            }`}
+          >
+            {tab.label}
+            <span className="ml-1.5 text-white/25">{tab.count}</span>
+          </a>
+        );
+      })}
+    </div>
+  );
+}
+
+export default async function LeadsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string }>;
+}) {
+  const { status: requested } = await searchParams;
+  const active = LEAD_STATUSES.some((status) => status.value === requested)
+    ? (requested as LeadStatus)
+    : null;
+
+  const [leads, grouped, total] = await Promise.all([
+    prisma.lead.findMany({
+      where: active ? { status: active } : {},
+      orderBy: { submittedAt: "desc" },
+      include: {
       session: {
         select: {
           // Links each lead back to its session row.
@@ -109,13 +165,24 @@ export default async function LeadsPage() {
           utmTerm: true,
           placement: true,
           rawParams: true,
-          // Context for the Meta CAPI modal.
-          location: true,
-          metaAdId: true,
+            // Context for the Meta CAPI modal.
+            location: true,
+            metaAdId: true,
+          },
         },
       },
-    },
-  });
+    }),
+    prisma.lead.groupBy({ by: ["status"], _count: { _all: true } }),
+    prisma.lead.count(),
+  ]);
+
+  // Rows written before the status column existed group under whatever is in
+  // the database; statusOf folds those into "new" so the tabs still add up.
+  const counts: Record<string, number> = {};
+  for (const group of grouped) {
+    const key = statusOf(group.status);
+    counts[key] = (counts[key] ?? 0) + group._count._all;
+  }
 
   const now = new Date();
 
@@ -124,23 +191,32 @@ export default async function LeadsPage() {
       <PageHeader
         title="Leads"
         count={
-          leads.length === 0
+          total === 0
             ? "No leads yet"
-            : `${leads.length} ${leads.length === 1 ? "submission" : "submissions"}`
+            : active
+              ? `${leads.length} of ${total} ${total === 1 ? "submission" : "submissions"}`
+              : `${total} ${total === 1 ? "submission" : "submissions"}`
         }
-      />
+      >
+        <StatusTabs active={active} counts={counts} total={total} />
+      </PageHeader>
 
       <Card>
         {leads.length === 0 ? (
           <EmptyState
-            title="No leads captured yet"
-            hint="Every Enquire Now submission on the landing page lands here."
+            title={active ? `No leads marked ${active}` : "No leads captured yet"}
+            hint={
+              active
+                ? "Move a lead into this stage from the Status column, or switch back to All."
+                : "Every Enquire Now submission on the landing page lands here."
+            }
           />
         ) : (
           <TableScroll>
             <table className="w-full border-collapse text-sm">
               <thead className="border-b border-white/[0.07] bg-white/[0.02]">
                 <tr>
+                  <Th>Status</Th>
                   <Th>Name</Th>
                   <Th>Phone</Th>
                   <Th>Email</Th>
@@ -159,6 +235,18 @@ export default async function LeadsPage() {
                     key={lead.id}
                     className="transition-colors hover:bg-white/[0.02]"
                   >
+                    <Td>
+                      <StatusSelect leadId={lead.id} status={lead.status} />
+                      {lead.statusAt && (
+                        <span
+                          className="mt-1 block text-[10px] text-white/25"
+                          title={formatDateTime(lead.statusAt)}
+                        >
+                          {relativeTime(lead.statusAt, now)}
+                        </span>
+                      )}
+                    </Td>
+
                     <Td className="font-medium text-white">{lead.name}</Td>
 
                     <Td>

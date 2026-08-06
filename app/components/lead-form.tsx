@@ -15,8 +15,16 @@ declare global {
   interface Window {
     /** Set by public/tracker.js — links this submission to the visit. */
     __trSessionId?: string;
+    /** Also public/tracker.js: hand-validated forms report their own errors. */
+    __tr?: {
+      formError: (formId: string, field?: string | null) => void;
+      formSubmitted: (formId: string) => void;
+    };
   }
 }
+
+/** Tracked under this id in /admin/forms. */
+const FORM_ID = "enquiry";
 
 type Tone = "light" | "dark" | "glass";
 
@@ -89,9 +97,18 @@ export default function LeadForm({
 
     // The real client-side gate. The live filters and the native `pattern`
     // below are polish; this is what stops a bad submit reaching the network.
-    if (!isValidName(name)) return setError("Please enter your full name.");
-    if (!isValidPhone(rawPhone))
+    //
+    // Each rejection is also reported to the tracker: the form is noValidate,
+    // so the browser fires no `invalid` event of its own, and without these
+    // /admin/forms would show a silent drop between started and submitted.
+    if (!isValidName(name)) {
+      window.__tr?.formError(FORM_ID, "name");
+      return setError("Please enter your full name.");
+    }
+    if (!isValidPhone(rawPhone)) {
+      window.__tr?.formError(FORM_ID, "phone");
       return setError("Please enter a valid 10-digit phone number.");
+    }
 
     // Send digits only — the server, the WhatsApp link and Meta's phone
     // hashing all expect a bare number.
@@ -150,6 +167,7 @@ export default function LeadForm({
   return (
     <form
       id={id}
+      data-form-id={FORM_ID}
       onSubmit={handleSubmit}
       noValidate
       className={`grid gap-4 rounded-3xl border p-6 sm:grid-cols-2 sm:p-8 ${s.frame}`}

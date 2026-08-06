@@ -87,6 +87,9 @@ export default function ThankYouOptionalForm({ leadId }: { leadId: string }) {
 
   return (
     <form
+      // Its own id in /admin/forms: this form is optional, so its abandon rate
+      // means something completely different from the enquiry form's.
+      data-form-id="enrich"
       onSubmit={handleSubmit}
       noValidate
       className="mt-10 grid gap-4 rounded-3xl border border-line bg-white p-6 sm:grid-cols-2 sm:p-8"

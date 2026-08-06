@@ -393,17 +393,21 @@ function ActionButton({
   icon = "arrow",
   external = false,
   className = "",
+  ctaId,
   children,
 }: {
   href: string;
   icon?: string;
   external?: boolean;
   className?: string;
+  /** Tracked as this id in /admin/ctas. See public/tracker.js. */
+  ctaId?: string;
   children: React.ReactNode;
 }) {
   return (
     <a
       href={href}
+      data-cta-id={ctaId}
       {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
       className={`group inline-flex items-center gap-3 rounded-xl bg-black py-2 pr-2 pl-6 text-sm font-semibold text-white ring-1 ring-white/10 shadow-[0_12px_32px_-14px_rgba(0,0,0,0.6)] transition hover:bg-black/85 ${className}`}
     >
@@ -436,7 +440,12 @@ export default function Home() {
               </span>
             </span>
           </div>
-          <ActionButton href={CONTACT.phoneHref} icon="phone" className="py-1.5 pl-5">
+          <ActionButton
+            href={CONTACT.phoneHref}
+            icon="phone"
+            ctaId="header-call"
+            className="py-1.5 pl-5"
+          >
             Call Us
           </ActionButton>
         </div>
@@ -477,6 +486,7 @@ export default function Home() {
                   <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-start">
                     <ActionButton
                       href="#lead-form"
+                      ctaId="hero-price"
                       className="w-full justify-between sm:w-auto sm:justify-start"
                     >
                       Get Pre-Launch Price
@@ -484,6 +494,7 @@ export default function Home() {
                     <ActionButton
                       href={CONTACT.phoneHref}
                       icon="phone"
+                      ctaId="hero-call"
                       className="w-full justify-between sm:w-auto sm:justify-start"
                     >
                       Call Us
@@ -621,7 +632,11 @@ export default function Home() {
                         <dd className="font-medium text-black">{config.price}</dd>
                       </div>
                     </dl>
-                    <ActionButton href="#lead-form" className="mt-7 w-full justify-between">
+                    <ActionButton
+                      href="#lead-form"
+                      ctaId="pricing-details"
+                      className="mt-7 w-full justify-between"
+                    >
                       Get Price Details
                     </ActionButton>
                   </div>
@@ -793,7 +808,11 @@ export default function Home() {
                     </li>
                   ))}
                 </ul>
-                <ActionButton href="#lead-form" className="mt-8 w-full justify-between">
+                <ActionButton
+                  href="#lead-form"
+                  ctaId="location-enquiry"
+                  className="mt-8 w-full justify-between"
+                >
                   Ask About Connectivity
                 </ActionButton>
               </div>
@@ -851,6 +870,7 @@ export default function Home() {
               <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:gap-10">
                 <a
                   href={CONTACT.phoneHref}
+                  data-cta-id="contact-phone"
                   className="flex items-center gap-3 text-sm text-white/80 transition hover:text-gold"
                 >
                   <Icon name="phone" className="size-4 text-gold" />
@@ -858,6 +878,7 @@ export default function Home() {
                 </a>
                 <a
                   href={`mailto:${CONTACT.email}`}
+                  data-cta-id="contact-email"
                   className="flex items-center gap-3 text-sm text-white/80 transition hover:text-gold"
                 >
                   <Icon name="mail" className="size-4 text-gold" />
@@ -866,7 +887,7 @@ export default function Home() {
               </div>
             </div>
 
-            <ActionButton href="#lead-form" className="w-fit">
+            <ActionButton href="#lead-form" ctaId="contact-callback" className="w-fit">
               Request a Callback
             </ActionButton>
           </div>
@@ -986,16 +1007,27 @@ export default function Home() {
 
             <div className="flex flex-col gap-3 text-sm lg:items-end">
               <p className="font-display text-base font-semibold text-white">{CONTACT.name}</p>
-              <a href={CONTACT.phoneHref} className="text-white/70 transition hover:text-gold">
+              <a
+                href={CONTACT.phoneHref}
+                data-cta-id="footer-phone"
+                className="text-white/70 transition hover:text-gold"
+              >
                 {CONTACT.phone}
               </a>
               <a
                 href={`mailto:${CONTACT.email}`}
+                data-cta-id="footer-email"
                 className="text-white/70 transition hover:text-gold"
               >
                 {CONTACT.email}
               </a>
-              <ActionButton href={whatsappLink()} external icon="phone" className="mt-3 w-fit">
+              <ActionButton
+                href={whatsappLink()}
+                external
+                icon="phone"
+                ctaId="footer-whatsapp"
+                className="mt-3 w-fit"
+              >
                 Chat on WhatsApp
               </ActionButton>
             </div>
@@ -1020,6 +1052,7 @@ export default function Home() {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Chat on WhatsApp"
+        data-cta-id="sticky-whatsapp"
         className="fixed right-5 bottom-5 z-50 grid size-14 place-items-center rounded-full bg-[#25D366] text-white shadow-lg transition hover:brightness-105"
       >
         <svg viewBox="0 0 24 24" fill="currentColor" className="size-7" aria-hidden="true">
@@ -1029,6 +1062,7 @@ export default function Home() {
       <a
         href={CONTACT.phoneHref}
         aria-label="Call us"
+        data-cta-id="sticky-call"
         className="fixed bottom-5 left-5 z-50 grid size-14 place-items-center rounded-full bg-black text-gold shadow-lg transition hover:bg-black/85 lg:hidden"
       >
         <Icon name="phone" className="size-6" />

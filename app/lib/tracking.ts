@@ -57,6 +57,26 @@ export const entryMetaSchema = z.object({
 
 export type EntryMeta = z.infer<typeof entryMetaSchema>;
 
+/**
+ * What the visitor is browsing on. Sent once at session start.
+ *
+ * Every field is optional: an older cached tracker.js posts sessions without
+ * them, and several are unsupported outside Chrome.
+ */
+export const environmentSchema = z.object({
+  os: shortString.nullish(),
+  browserVersion: shortString.nullish(),
+  screenWidth: z.number().int().min(0).max(20000).nullish(),
+  screenHeight: z.number().int().min(0).max(20000).nullish(),
+  viewportWidth: z.number().int().min(0).max(20000).nullish(),
+  viewportHeight: z.number().int().min(0).max(20000).nullish(),
+  language: z.string().trim().max(35).nullish(),
+  timezone: z.string().trim().max(60).nullish(),
+  connection: z.string().trim().max(20).nullish(),
+});
+
+export type Environment = z.infer<typeof environmentSchema>;
+
 export const sessionStartSchema = z.object({
   kind: z.literal("session"),
   clientId: idString,
@@ -69,24 +89,115 @@ export const sessionStartSchema = z.object({
   path: pathString,
   // Optional so an older cached tracker.js keeps working after deploy.
   entryMeta: entryMetaSchema.optional(),
+  environment: environmentSchema.optional(),
 });
 
-export const eventBatchSchema = z.object({
-  kind: z.literal("events"),
-  clientId: idString,
-  events: z
-    .array(
-      z.object({
-        type: z.enum(INTERACTION_TYPES),
-        // Normalised page coordinates; anything outside 0-1 is a bug or a forgery.
-        xPct: z.number().min(0).max(1).optional(),
-        yPct: z.number().min(0).max(1).optional(),
-        path: pathString,
-      }),
-    )
-    .min(1)
-    .max(50),
+export const CTA_EVENT_TYPES = ["viewed", "hover", "click"] as const;
+
+export const FORM_EVENT_TYPES = [
+  "viewed",
+  "started",
+  "field_focus",
+  "field_complete",
+  "validation_error",
+  "abandoned",
+  "submitted",
+] as const;
+
+export const MOUSE_SIGNAL_TYPES = ["rage_click", "dead_click", "double_click"] as const;
+
+export const VITALS_METRICS = ["LCP", "INP", "CLS", "FCP", "TTFB"] as const;
+
+export const VITALS_RATINGS = ["good", "needs-improvement", "poor"] as const;
+
+export const ERROR_KINDS = ["js", "promise", "resource"] as const;
+
+/** Identifier read out of a `data-cta-id` / `data-form-id` attribute. */
+const markupId = z.string().trim().min(1).max(100);
+
+/** Free text captured from the page — always length-capped before storage. */
+const captured = (max: number) => z.string().trim().max(max).nullish();
+
+const ctaEventSchema = z.object({
+  ctaId: markupId,
+  type: z.enum(CTA_EVENT_TYPES),
+  label: captured(200),
+  path: pathString,
 });
+
+const formEventSchema = z.object({
+  formId: markupId,
+  type: z.enum(FORM_EVENT_TYPES),
+  // Field *names* only. The tracker must never send what was typed into them.
+  field: captured(100),
+  path: pathString,
+});
+
+const mouseSignalSchema = z.object({
+  type: z.enum(MOUSE_SIGNAL_TYPES),
+  selector: captured(300),
+  label: captured(200),
+  path: pathString,
+});
+
+const performanceMetricSchema = z.object({
+  name: z.enum(VITALS_METRICS),
+  // Milliseconds, except CLS which is a unitless ratio. Bounded so one broken
+  // measurement cannot skew a whole distribution.
+  value: z.number().min(0).max(3_600_000),
+  rating: z.enum(VITALS_RATINGS),
+  path: pathString,
+});
+
+const errorEventSchema = z.object({
+  kind: z.enum(ERROR_KINDS),
+  message: z.string().trim().min(1).max(1000),
+  source: captured(500),
+  line: z.number().int().min(0).max(10_000_000).nullish(),
+  path: pathString,
+});
+
+/**
+ * One flush carries every event type the collectors produced since the last
+ * one — interactions, CTAs, forms, frustration signals, vitals and errors —
+ * rather than one request per kind. Every array is optional and independently
+ * capped; a batch that ends up carrying nothing at all is rejected.
+ */
+export const eventBatchSchema = z
+  .object({
+    kind: z.literal("events"),
+    clientId: idString,
+    events: z
+      .array(
+        z.object({
+          type: z.enum(INTERACTION_TYPES),
+          // Normalised page coordinates; anything outside 0-1 is a bug or a forgery.
+          xPct: z.number().min(0).max(1).optional(),
+          yPct: z.number().min(0).max(1).optional(),
+          path: pathString,
+        }),
+      )
+      .max(50)
+      .optional(),
+    cta: z.array(ctaEventSchema).max(50).optional(),
+    forms: z.array(formEventSchema).max(50).optional(),
+    mouse: z.array(mouseSignalSchema).max(50).optional(),
+    vitals: z.array(performanceMetricSchema).max(20).optional(),
+    errors: z.array(errorEventSchema).max(20).optional(),
+  })
+  .refine(
+    (batch) =>
+      (batch.events?.length ?? 0) +
+        (batch.cta?.length ?? 0) +
+        (batch.forms?.length ?? 0) +
+        (batch.mouse?.length ?? 0) +
+        (batch.vitals?.length ?? 0) +
+        (batch.errors?.length ?? 0) >
+      0,
+    { message: "empty batch" },
+  );
+
+export type EventBatch = z.infer<typeof eventBatchSchema>;
 
 export const heartbeatSchema = z.object({
   kind: z.literal("heartbeat"),

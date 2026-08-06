@@ -11,8 +11,33 @@ import {
   deriveBounced,
   trackPayloadSchema,
   type EntryMeta,
+  type Environment,
 } from "../../lib/tracking";
 import type { Prisma } from "../../../generated/prisma/client";
+
+/**
+ * Maps the client's environment capture onto Session columns.
+ *
+ * Nothing here is load-bearing, and all of it is unverifiable client input, so
+ * every field is bounded by the schema and stored as-is or not at all.
+ */
+function environmentFields(environment: Environment | undefined) {
+  if (!environment) return {};
+
+  const text = (raw: string | null | undefined) => raw?.trim() || null;
+
+  return {
+    os: text(environment.os),
+    browserVersion: text(environment.browserVersion),
+    screenWidth: environment.screenWidth ?? null,
+    screenHeight: environment.screenHeight ?? null,
+    viewportWidth: environment.viewportWidth ?? null,
+    viewportHeight: environment.viewportHeight ?? null,
+    language: text(environment.language),
+    timezone: text(environment.timezone),
+    connection: text(environment.connection),
+  };
+}
 
 /**
  * Maps the client's acquisition capture onto Session columns.
@@ -103,6 +128,7 @@ export async function POST(request: Request) {
           medium: payload.medium ?? null,
           campaign: payload.campaign ?? null,
           ...acquisitionFields(payload.entryMeta),
+          ...environmentFields(payload.environment),
         },
         // A reload of the same tab re-sends this; only refresh liveness.
         update: { lastSeenAt: new Date() },
@@ -121,29 +147,117 @@ export async function POST(request: Request) {
       // than inventing a session with no device or attribution data.
       if (!session) return NO_CONTENT;
 
-      // Only clicks and hovers count as engagement for the bounce heuristic.
-      const interactions = payload.events.filter(
-        (event) => event.type === "click" || event.type === "hover",
-      ).length;
+      const sessionId = session.id;
+      const events = payload.events ?? [];
 
-      await prisma.$transaction([
-        prisma.pageEvent.createMany({
-          data: payload.events.map((event) => ({
-            sessionId: session.id,
-            type: event.type,
-            xPct: event.xPct ?? null,
-            yPct: event.yPct ?? null,
-            path: event.path ?? null,
-          })),
-        }),
+      // What counts as engagement for the bounce heuristic: a click or hover,
+      // or any deliberate act on a CTA or a form. An impression does not —
+      // it only means something scrolled past.
+      const interactions =
+        events.filter((event) => event.type === "click" || event.type === "hover").length +
+        (payload.cta ?? []).filter((event) => event.type === "click").length +
+        (payload.forms ?? []).filter((event) => event.type !== "viewed").length;
+
+      // One transaction per flush: either the whole batch lands or none of it
+      // does, so an event never counts toward eventCount without being stored.
+      const writes: Prisma.PrismaPromise<unknown>[] = [];
+
+      if (events.length) {
+        writes.push(
+          prisma.pageEvent.createMany({
+            data: events.map((event) => ({
+              sessionId,
+              type: event.type,
+              xPct: event.xPct ?? null,
+              yPct: event.yPct ?? null,
+              path: event.path ?? null,
+            })),
+          }),
+        );
+      }
+
+      if (payload.cta?.length) {
+        writes.push(
+          prisma.ctaEvent.createMany({
+            data: payload.cta.map((event) => ({
+              sessionId,
+              ctaId: event.ctaId,
+              type: event.type,
+              label: event.label ?? null,
+              path: event.path ?? null,
+            })),
+          }),
+        );
+      }
+
+      if (payload.forms?.length) {
+        writes.push(
+          prisma.formEvent.createMany({
+            data: payload.forms.map((event) => ({
+              sessionId,
+              formId: event.formId,
+              type: event.type,
+              field: event.field ?? null,
+              path: event.path ?? null,
+            })),
+          }),
+        );
+      }
+
+      if (payload.mouse?.length) {
+        writes.push(
+          prisma.mouseInteraction.createMany({
+            data: payload.mouse.map((event) => ({
+              sessionId,
+              type: event.type,
+              selector: event.selector ?? null,
+              label: event.label ?? null,
+              path: event.path ?? null,
+            })),
+          }),
+        );
+      }
+
+      if (payload.vitals?.length) {
+        writes.push(
+          prisma.performanceMetric.createMany({
+            data: payload.vitals.map((metric) => ({
+              sessionId,
+              name: metric.name,
+              value: metric.value,
+              rating: metric.rating,
+              path: metric.path ?? null,
+            })),
+          }),
+        );
+      }
+
+      if (payload.errors?.length) {
+        writes.push(
+          prisma.errorEvent.createMany({
+            data: payload.errors.map((error) => ({
+              sessionId,
+              kind: error.kind,
+              message: error.message,
+              source: error.source ?? null,
+              line: error.line ?? null,
+              path: error.path ?? null,
+            })),
+          }),
+        );
+      }
+
+      writes.push(
         prisma.session.update({
-          where: { id: session.id },
+          where: { id: sessionId },
           data: {
             lastSeenAt: new Date(),
             eventCount: { increment: interactions },
           },
         }),
-      ]);
+      );
+
+      await prisma.$transaction(writes);
 
       return NO_CONTENT;
     }
