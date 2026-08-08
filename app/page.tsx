@@ -206,7 +206,7 @@ const FAQS = [
   },
   {
     q: "When will the project launch?",
-    a: "The project is at pre-launch stage. Launch and possession dates are yet to be confirmed - share your details and Rahul Thakur will update you as soon as they are announced.",
+    a: "The project is at pre-launch stage. Launch and possession dates are yet to be confirmed - share your details and our team will update you as soon as they are announced.",
   },
   {
     q: "What is included in the 47.5-acre campus?",
@@ -218,7 +218,7 @@ const FAQS = [
   },
   {
     q: "Do I need to visit to get started?",
-    a: "No. Share your name and number, and Rahul Thakur will call you back within 30 minutes with pricing and floor plan details.",
+    a: "No. Share your name and number, and our team will call you back within 30 minutes with pricing and floor plan details.",
   },
 ];
 
@@ -424,7 +424,7 @@ export default function Home() {
     <>
       {/* Full-page session recording — landing page only, never the admin */}
       <SessionRecorder />
-      {/* Identity strip - channel partner badge only, no navigation menu */}
+      {/* Identity strip - brand badge only, no navigation menu */}
       <header className="sticky top-0 z-40 border-b border-line/70 bg-cream/85 backdrop-blur">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-5 py-3 sm:px-8">
           <div className="flex items-center gap-3">
@@ -432,11 +432,11 @@ export default function Home() {
               TR
             </span>
             <span className="leading-tight">
-              <span className="block text-[10px] tracking-[0.18em] text-muted uppercase">
-                Channel Partner for
-              </span>
-              <span className="font-display block text-sm font-semibold text-black">
+              <span className="font-display block text-base font-semibold text-black">
                 Tata Realty
+              </span>
+              <span className="block text-[10px] tracking-[0.18em] text-muted uppercase">
+                Ghansoli, Navi Mumbai
               </span>
             </span>
           </div>
@@ -864,7 +864,9 @@ export default function Home() {
               <p className="font-display text-3xl font-semibold text-white sm:text-4xl">
                 {CONTACT.name}
               </p>
-              <p className="mt-2 text-sm tracking-wide text-gold uppercase">{CONTACT.role}</p>
+              <p className="mt-2 text-sm tracking-wide text-gold uppercase">
+                Ghansoli, Navi Mumbai
+              </p>
               <p className="mt-1 text-sm text-white/50">{CONTACT.location}</p>
 
               <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:gap-10">
@@ -994,13 +996,12 @@ export default function Home() {
         <div className="mx-auto w-full max-w-7xl px-5 pt-12 sm:px-8">
           <div className="grid gap-10 border-b border-white/10 pb-10 lg:grid-cols-2">
             <div>
-              <p className="text-[10px] tracking-[0.18em] text-white/40 uppercase">
-                Channel Partner for
+              <p className="font-display text-2xl font-semibold text-white">Tata Realty</p>
+              <p className="mt-1 text-[10px] tracking-[0.18em] text-white/40 uppercase">
+                Ghansoli, Navi Mumbai
               </p>
-              <p className="font-display mt-1 text-2xl font-semibold text-white">Tata Realty</p>
               <p className="mt-6 max-w-md text-sm leading-relaxed text-white/50">
-                {CONTACT.name} is a channel partner for Tata Realty and is not the developer. All
-                details, sizes and images on this page are indicative and subject to change.
+                All details, sizes and images on this page are indicative and subject to change.
               </p>
               <p className="mt-4 text-sm text-white/50">RERA Number: To be confirmed.</p>
             </div>
@@ -1034,7 +1035,7 @@ export default function Home() {
           </div>
 
           <p className="pt-8 text-left text-xs text-white/40">
-            © {new Date().getFullYear()} {CONTACT.name} · {CONTACT.role}
+            © {new Date().getFullYear()} {CONTACT.name}
           </p>
 
           <p

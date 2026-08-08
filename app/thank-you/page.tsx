@@ -30,11 +30,11 @@ export default async function ThankYouPage({
               TR
             </span>
             <span className="leading-tight">
-              <span className="block text-[10px] tracking-[0.18em] text-muted uppercase">
-                Channel Partner for
-              </span>
-              <span className="font-display block text-sm font-semibold text-black">
+              <span className="font-display block text-base font-semibold text-black">
                 Tata Realty
+              </span>
+              <span className="block text-[10px] tracking-[0.18em] text-muted uppercase">
+                Ghansoli, Navi Mumbai
               </span>
             </span>
           </Link>
@@ -79,8 +79,8 @@ export default async function ThankYouPage({
             Thank you for reaching out
           </h1>
           <p className="mx-auto mt-4 max-w-lg text-base leading-relaxed text-muted">
-            Your enquiry has been received. {CONTACT.firstName} will call you
-            within 30 minutes with pre-launch pricing and floor plans.
+            Your enquiry has been received. Our team will call you within 30
+            minutes with pre-launch pricing and floor plans.
           </p>
 
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">

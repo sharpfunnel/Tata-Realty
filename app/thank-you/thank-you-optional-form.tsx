@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { BUDGET_OPTIONS, CONFIG_OPTIONS, CONTACT } from "../lib/site";
+import { BUDGET_OPTIONS, CONFIG_OPTIONS } from "../lib/site";
 import { isValidEmail } from "../lib/validation";
 
 type Status = "idle" | "submitting" | "success" | "error";
@@ -79,7 +79,7 @@ export default function ThankYouOptionalForm({ leadId }: { leadId: string }) {
           Got it — thank you
         </p>
         <p className="mt-2 text-sm text-muted">
-          {CONTACT.firstName} will have this in front of him before he calls.
+          Our team will have this in front of them before they call.
         </p>
       </div>
     );
